@@ -1,0 +1,42 @@
+{
+  "name": "warp-multithreaded",
+  "version": "1.0.0",
+  "description": "Enable multithreaded AI agent development with coordinated parallel sessions in Warp Terminal",
+  "main": "core/session-manager.js",
+  "bin": {
+    "warp-multithreaded": "./scripts/coordinator.js"
+  },
+  "scripts": {
+    "test": "node test/run-tests.js",
+    "start": "node scripts/coordinator.js",
+    "init": "node scripts/coordinator.js init",
+    "status": "node scripts/coordinator.js status",
+    "demo": "node examples/demo.js"
+  },
+  "keywords": [
+    "warp",
+    "multithreaded",
+    "ai-agents",
+    "terminal",
+    "parallel-development",
+    "productivity",
+    "coordination",
+    "multi-session",
+    "development-tools"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/warp-multithreaded.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/warp-multithreaded/issues"
+  },
+  "homepage": "https://github.com/yourusername/warp-multithreaded#readme"
+}
