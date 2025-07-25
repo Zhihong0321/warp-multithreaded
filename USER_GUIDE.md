@@ -339,6 +339,86 @@ node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=te
 
 Each session will coordinate automatically and prevent file conflicts! 🎉
 
+### 🤔 **What if I Skip Session Creation and Start Development Directly?**
+
+**Don't worry!** The framework is smart and handles this gracefully:
+
+#### ✅ **Automatic "main" Session Creation**
+If you start development without creating a session, the framework automatically creates a default session called **"main"** with these settings:
+
+```json
+{
+  "name": "main",
+  "focus": ["general"],
+  "directories": ["src"],
+  "file_patterns": ["*"],
+  "status": "active"
+}
+```
+
+#### 🎯 **What This Means**
+- **You can still work normally** - All features function properly
+- **File conflict detection works** - Framework tracks your file usage
+- **Session coordination active** - If other sessions exist, conflicts are prevented
+- **Progress tracking enabled** - Your work is logged and tracked
+- **Dashboard shows your work** - "main" session appears in dashboard
+
+#### 🚀 **When to Create Explicit Sessions vs. Using Default**
+
+**Use Default "main" Session When:**
+- ✅ **Solo development** - You're the only one working
+- ✅ **Small projects** - Simple, single-focus work
+- ✅ **Quick prototyping** - Fast iteration without complex coordination
+- ✅ **Learning/testing** - Exploring the framework
+
+**Create Explicit Sessions When:**
+- 🎯 **Multi-focus work** - Frontend + Backend + Testing simultaneously
+- 👥 **Team development** - Multiple developers using AI agents
+- 🏗️ **Large projects** - Complex architecture with separate concerns
+- 📋 **Organized workflow** - Want clear separation of concerns
+
+#### 📊 **How to Check Your Current Session**
+
+```bash
+# See what session(s) are currently active
+node /path/to/warp-multithreaded/scripts/coordinator.js status
+
+# List all sessions (including auto-created ones)
+node /path/to/warp-multithreaded/scripts/coordinator.js session list
+
+# Get details about the main session
+node /path/to/warp-multithreaded/scripts/coordinator.js session info --name=main
+```
+
+#### 🔄 **Upgrading from Default to Custom Sessions**
+
+You can start with the default "main" session and add focused sessions later:
+
+```bash
+# You're already working in "main" session, now add focused ones:
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=frontend-work \
+  --focus=ui,components \
+  --directories=src/components,src/styles
+
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=backend-api \
+  --focus=api,database \
+  --directories=src/api,src/models
+
+# Now you have "main" + "frontend-work" + "backend-api" sessions!
+```
+
+#### 💡 **Pro Tip: Framework is Forgiving**
+
+The framework is designed to **"just work"** regardless of how you start:
+- 🎯 **No session needed upfront** - Auto-creates when needed
+- 🔄 **Easy to upgrade later** - Add sessions as project complexity grows
+- 🛡️ **Always protected** - Conflict detection works with any session setup
+- 📊 **Full tracking** - Progress saved whether you use default or custom sessions
+
+**Bottom Line:** Start development however feels natural, the framework adapts to your workflow! 🚀
+
 ---
 
 ## 🏆 Best Practices
