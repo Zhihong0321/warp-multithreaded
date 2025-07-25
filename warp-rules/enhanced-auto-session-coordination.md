@@ -2,6 +2,22 @@
 
 ## 🚨 CRITICAL: You Are Working with Fully Automated Session Management
 
+**⚠️ MANDATORY FIRST STEP: Framework Version Check**
+```bash
+# ALWAYS run this BEFORE any work - framework may be outdated
+node scripts/version-detector.js
+```
+
+**🛑 IF VERSION CHECK FAILS:**
+- ❌ **STOP** - Do not proceed with any development work
+- 📥 **UPDATE REQUIRED** - Your framework installation is outdated/incomplete
+- 🔄 **FOLLOW INSTRUCTIONS** - Update framework before continuing
+- ✅ **VERIFY** - Re-run version check until "UP_TO_DATE" status
+
+**ONLY proceed if framework is current and complete!**
+
+---
+
 This project uses **FULLY AUTOMATED session management** through the Warp Multithreaded Framework. **You do NOT need to manually create or manage sessions** - the system automatically detects your work context and creates appropriate sessions for you.
 
 ## 🎯 How Auto-Sessions Work

@@ -6,6 +6,20 @@ You are working in a **multi-session development environment** where **multiple 
 
 ## 🔄 MANDATORY Session Startup Protocol
 
+### STEP 0: Framework Version Check (CRITICAL - ALWAYS FIRST)
+```bash
+# MANDATORY: Check framework version BEFORE any work
+node scripts/version-detector.js
+```
+
+**🚨 IF VERSION CHECK FAILS:**
+- ❌ **STOP IMMEDIATELY** - Do not proceed with any tasks
+- 📥 **UPDATE REQUIRED** - Framework is outdated or incomplete
+- 🔄 **FOLLOW UPDATE INSTRUCTIONS** - Update before continuing
+- ✅ **VERIFY UPDATE** - Re-run version check until it passes
+
+**ONLY proceed to Step 1 if version check shows "UP_TO_DATE"**
+
 ### STEP 1: Session Identity Check (REQUIRED)
 ```bash
 # ALWAYS run this first to understand your role
