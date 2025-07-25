@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warp Multithreaded Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <h1>Warp Multithreaded</h1>
+                <span class="beta">Dashboard</span>
+            </div>
+            <div class="header-info">
+                <div class="project-info">
+                    <i class="fas fa-folder"></i>
+                    <span id="project-name">Loading...</span>
+                </div>
+                <div class="connection-status" id="connection-status">
+                    <i class="fas fa-circle"></i>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Cards -->
+            <section class="overview-section">
+                <div class="card stats-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-tachometer-alt"></i> Overview</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="active-sessions">0</div>
+                            <div class="stat-label">Active Sessions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-files">0</div>
+                            <div class="stat-label">Files in Use</div>
+                        </div>
+                        <div class="stat-item conflicts">
+                            <div class="stat-value" id="total-conflicts">0</div>
+                            <div class="stat-label">Conflicts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="session-health">100%</div>
+                            <div class="stat-label">Health</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card actions-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-plus"></i> Quick Actions</h3>
+                    </div>
+                    <div class="actions-grid">
+                        <button class="btn btn-primary" onclick="showCreateSessionModal()">
+                            <i class="fas fa-plus-circle"></i> New Session
+                        </button>
+                        <button class="btn btn-secondary" onclick="refreshAll()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                        <button class="btn btn-warning" onclick="checkConflicts()">
+                            <i class="fas fa-exclamation-triangle"></i> Check Conflicts
+                        </button>
+                        <button class="btn btn-info" onclick="showProjectInfo()">
+                            <i class="fas fa-info-circle"></i> Project Info
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sessions Grid -->
+            <section class="sessions-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-layer-group"></i> Active Sessions</h3>
+                        <div class="card-actions">
+                            <button class="btn btn-small btn-primary" onclick="showCreateSessionModal()">
+                                <i class="fas fa-plus"></i> Add Session
+                            </button>
+                        </div>
+                    </div>
+                    <div class="sessions-grid" id="sessions-container">
+                        <div class="empty-state">
+                            <i class="fas fa-cube"></i>
+                            <p>No active sessions</p>
+                            <button class="btn btn-primary" onclick="showCreateSessionModal()">Create First Session</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Conflicts Section -->
+            <section class="conflicts-section" id="conflicts-section" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-exclamation-triangle"></i> File Conflicts</h3>
+                        <div class="card-actions">
+                            <button class="btn btn-small btn-warning" onclick="refreshConflicts()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div id="conflicts-container">
+                        <!-- Conflicts will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- File Activity -->
+            <section class="activity-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-file-alt"></i> File Activity</h3>
+                    </div>
+                    <div class="activity-list" id="activity-list">
+                        <div class="empty-state">
+                            <i class="fas fa-clock"></i>
+                            <p>No recent activity</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div class="modal" id="create-session-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Create New Session</h3>
+                <button class="close-btn" onclick="hideCreateSessionModal()">&times;</button>
+            </div>
+            <form id="create-session-form" onsubmit="createSession(event)">
+                <div class="form-group">
+                    <label for="session-name">Session Name</label>
+                    <input type="text" id="session-name" required placeholder="e.g., frontend, backend, testing">
+                </div>
+                <div class="form-group">
+                    <label for="session-focus">Focus Areas (comma-separated)</label>
+                    <input type="text" id="session-focus" placeholder="e.g., ui, components, styling">
+                </div>
+                <div class="form-group">
+                    <label for="session-directories">Directories (comma-separated)</label>
+                    <input type="text" id="session-directories" placeholder="e.g., src/components, src/styles">
+                </div>
+                <div class="form-group">
+                    <label for="session-patterns">File Patterns (comma-separated)</label>
+                    <input type="text" id="session-patterns" placeholder="e.g., *.tsx, *.jsx, *.css">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideCreateSessionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Update Modal -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-tasks"></i> Update Task</h3>
+                <button class="close-btn" onclick="hideTaskModal()">&times;</button>
+            </div>
+            <form id="task-form" onsubmit="updateTask(event)">
+                <div class="form-group">
+                    <label for="task-description">Task Description</label>
+                    <textarea id="task-description" rows="3" placeholder="Describe what this session is working on..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Info Modal -->
+    <div class="modal" id="project-info-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> Project Information</h3>
+                <button class="close-btn" onclick="hideProjectInfoModal()">&times;</button>
+            </div>
+            <div id="project-info-content">
+                <!-- Project info will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container">
+        <!-- Toasts will be added here dynamically -->
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>

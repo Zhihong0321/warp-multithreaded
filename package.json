@@ -8,10 +8,16 @@
   },
   "scripts": {
     "test": "node test/run-tests.js",
+    "validate": "node scripts/validate-system.js",
+    "health-check": "node scripts/health-check.js",
     "start": "node scripts/coordinator.js",
     "init": "node scripts/coordinator.js init",
     "status": "node scripts/coordinator.js status",
-    "demo": "node examples/demo.js"
+    "demo": "node examples/demo.js",
+    "dashboard": "node dashboard/server.js",
+    "setup:windows": "powershell -ExecutionPolicy Bypass -File scripts/setup-windows.ps1",
+    "setup:unix": "bash scripts/setup-unix.sh",
+    "postinstall": "node scripts/health-check.js"
   },
   "keywords": [
     "warp",
@@ -29,7 +35,10 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4"
+  },
   "devDependencies": {},
   "repository": {
     "type": "git",

@@ -64,10 +64,17 @@ class SessionManager {
      * Create a new session
      */
     createSession(sessionName, options = {}) {
+        // Validate and sanitize session name
+        if (!sessionName || typeof sessionName !== 'string') {
+            throw new Error('Session name must be a non-empty string');
+        }
+        
+        const sanitizedName = this.sanitizeSessionName(sessionName);
+        
         const sessionId = crypto.randomUUID();
         const session = {
             id: sessionId,
-            name: sessionName,
+            name: sanitizedName,
             created: new Date().toISOString(),
             last_active: new Date().toISOString(),
             focus: options.focus || ['general'],
@@ -79,11 +86,17 @@ class SessionManager {
             status: 'active'
         };
 
-        const sessionFile = path.join(this.sessionsDir, `${sessionName}.json`);
-        fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
+        const sessionFile = path.join(this.sessionsDir, `${sanitizedName}.json`);
+        
+        // Check if session already exists
+        if (fs.existsSync(sessionFile)) {
+            throw new Error(`Session '${sanitizedName}' already exists`);
+        }
+        
+        this.writeFileAtomic(sessionFile, JSON.stringify(session, null, 2));
 
         this.updateSessionsLock();
-        console.log(`✅ Session '${sessionName}' created with ID: ${sessionId}`);
+        console.log(`✅ Session '${sanitizedName}' created with ID: ${sessionId}`);
         return session;
     }
 
@@ -117,16 +130,17 @@ class SessionManager {
      * Update session activity
      */
     updateSession(sessionName, updates) {
-        const sessionFile = path.join(this.sessionsDir, `${sessionName}.json`);
+        const sanitizedName = this.sanitizeSessionName(sessionName);
+        const sessionFile = path.join(this.sessionsDir, `${sanitizedName}.json`);
         
         if (!fs.existsSync(sessionFile)) {
-            throw new Error(`Session '${sessionName}' not found`);
+            throw new Error(`Session '${sanitizedName}' not found`);
         }
 
         const session = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
         Object.assign(session, updates, { last_active: new Date().toISOString() });
         
-        fs.writeFileSync(sessionFile, JSON.stringify(session, null, 2));
+        this.writeFileAtomic(sessionFile, JSON.stringify(session, null, 2));
         this.updateSessionsLock();
         return session;
     }
@@ -167,23 +181,48 @@ class SessionManager {
      * Lock a file for a session
      */
     lockFile(sessionName, filePath) {
-        const conflicts = this.checkConflicts();
-        const existingConflict = conflicts.find(c => c.file === filePath);
-        
-        if (existingConflict) {
+        try {
+            const session = this.getSession(sessionName);
+            if (!session) {
+                return {
+                    success: false,
+                    reason: 'Session not found',
+                    conflicting_sessions: []
+                };
+            }
+
+            const conflicts = this.checkConflicts();
+            const existingConflict = conflicts.find(c => c.file === filePath);
+            
+            if (existingConflict) {
+                return {
+                    success: false,
+                    reason: 'File already in use',
+                    conflicting_sessions: existingConflict.sessions
+                };
+            }
+
+            // Check if file already locked by this session
+            if (session.active_files.includes(filePath)) {
+                return {
+                    success: true,
+                    reason: 'File already locked by this session'
+                };
+            }
+
+            // Add file to session's active files
+            this.updateSession(sessionName, {
+                active_files: [...session.active_files, filePath]
+            });
+
+            return { success: true };
+        } catch (error) {
             return {
                 success: false,
-                reason: 'File already in use',
-                conflicting_sessions: existingConflict.sessions
+                reason: 'Error locking file: ' + error.message,
+                conflicting_sessions: []
             };
         }
-
-        // Add file to session's active files
-        this.updateSession(sessionName, {
-            active_files: [...this.getSession(sessionName).active_files, filePath]
-        });
-
-        return { success: true };
     }
 
     /**
@@ -204,7 +243,8 @@ class SessionManager {
      * Get session by name
      */
     getSession(sessionName) {
-        const sessionFile = path.join(this.sessionsDir, `${sessionName}.json`);
+        const sanitizedName = this.sanitizeSessionName(sessionName);
+        const sessionFile = path.join(this.sessionsDir, `${sanitizedName}.json`);
         if (!fs.existsSync(sessionFile)) {
             return null;
         }
@@ -215,19 +255,20 @@ class SessionManager {
      * Close a session
      */
     closeSession(sessionName) {
-        const session = this.getSession(sessionName);
+        const sanitizedName = this.sanitizeSessionName(sessionName);
+        const session = this.getSession(sanitizedName);
         if (!session) {
-            throw new Error(`Session '${sessionName}' not found`);
+            throw new Error(`Session '${sanitizedName}' not found`);
         }
 
-        this.updateSession(sessionName, {
+        this.updateSession(sanitizedName, {
             status: 'closed',
             closed: new Date().toISOString(),
             active_files: [],
             locked_files: []
         });
 
-        console.log(`✅ Session '${sessionName}' closed`);
+        console.log(`✅ Session '${sanitizedName}' closed`);
         return true;
     }
 
@@ -256,6 +297,45 @@ class SessionManager {
     /**
      * Update the sessions lock file
      */
+    /**
+     * Atomic file write to prevent corruption during concurrent access
+     */
+    writeFileAtomic(filePath, content) {
+        const tempFile = filePath + '.tmp.' + crypto.randomUUID().slice(0, 8);
+        try {
+            fs.writeFileSync(tempFile, content);
+            fs.renameSync(tempFile, filePath);
+        } catch (error) {
+            // Clean up temp file if it exists
+            if (fs.existsSync(tempFile)) {
+                fs.unlinkSync(tempFile);
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Validate session name to prevent filesystem issues
+     */
+    sanitizeSessionName(sessionName) {
+        if (!sessionName || typeof sessionName !== 'string') {
+            throw new Error('Session name must be a non-empty string');
+        }
+        
+        // Remove invalid filesystem characters
+        const sanitized = sessionName.replace(/[<>:"/\\|?*]/g, '_').trim();
+        
+        if (sanitized.length === 0) {
+            throw new Error('Session name cannot be empty after sanitization');
+        }
+        
+        if (sanitized.length > 50) {
+            throw new Error('Session name too long (max 50 characters)');
+        }
+        
+        return sanitized;
+    }
+
     updateSessionsLock() {
         const lockData = {
             updated: new Date().toISOString(),
@@ -263,7 +343,7 @@ class SessionManager {
             project_root: this.projectRoot
         };
 
-        fs.writeFileSync(this.lockFile, JSON.stringify(lockData, null, 2));
+        this.writeFileAtomic(this.lockFile, JSON.stringify(lockData, null, 2));
     }
 
     /**

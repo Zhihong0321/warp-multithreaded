@@ -20,27 +20,40 @@ Enable multithreaded AI agent development with coordinated parallel sessions in 
 ## 📁 Project Structure
 
 ```
-warp-agent-framework/
+warp-multithreaded/
 ├── core/
-│   ├── session-manager.js      # Core session coordination
-│   ├── file-lock.js           # File locking mechanism
-│   └── task-queue.js          # Task distribution system
-├── templates/
-│   ├── web-app/               # Web development templates
-│   ├── api-project/           # API project templates
-│   └── general/               # General project templates
+│   ├── session-manager.js          # Core session coordination  
+│   └── masterplan-manager.js       # Persistent project memory
+├── warp-rules/                      # AI Agent behavior rules
+│   ├── enhanced-multi-session-coordination.md    # Parallel development
+│   ├── enhanced-masterplan-session-rules.md      # Context awareness
+│   ├── frontend-session-rules.md   # Frontend specialization
+│   └── backend-session-rules.md    # Backend specialization
 ├── scripts/
-│   ├── setup.ps1              # Windows setup script
-│   ├── setup.sh               # Unix setup script
-│   └── coordinator.js         # CLI coordination tool
-├── examples/
-│   ├── react-app/             # React project example
-│   ├── node-api/              # Node.js API example
-│   └── full-stack/            # Full-stack example
-└── docs/
-    ├── getting-started.md
-    ├── best-practices.md
-    └── api-reference.md
+│   ├── coordinator.js              # CLI coordination tool
+│   └── validate-system.js          # System validation
+├── dashboard/                       # Web dashboard
+│   ├── server.js                   # Dashboard backend
+│   └── public/                     # Dashboard frontend
+└── .warp-masterplan/               # Generated project memory
+    ├── masterplan.md               # Project overview
+    ├── tasks.json                  # Task management
+    └── session-log.md              # Session history
+```
+
+## 🗝️ The KEY: Warp Rules
+
+**Warp Rules are the activation key** that transforms standard AI into coordinated multithreaded development:
+
+### Enhanced Rules Available:
+- **`enhanced-multi-session-coordination.md`** - Crystal clear parallel development protocols  
+- **`enhanced-masterplan-session-rules.md`** - Explicit project memory integration
+- **Session-specific rules** - Frontend/backend specialization
+
+### How to Activate:
+```
+Human: Use enhanced-multi-session-coordination and enhanced-masterplan-session-rules from my Warp Drive.
+I need to work on user authentication for my web app.
 ```
 
 ## 🚀 Quick Start

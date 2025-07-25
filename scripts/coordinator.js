@@ -6,6 +6,7 @@
  */
 
 const SessionManager = require('../core/session-manager');
+const MasterplanManager = require('../core/masterplan-manager');
 const fs = require('fs');
 const path = require('path');
 
@@ -40,6 +41,21 @@ class WarpCoordinator {
                     break;
                 case 'suggest':
                     this.suggestTasks();
+                    break;
+                case 'dashboard':
+                    this.startDashboard();
+                    break;
+                case 'masterplan':
+                    this.handleMasterplanCommand(subcommand);
+                    break;
+                case 'context':
+                    this.showContext();
+                    break;
+                case 'validate':
+                    await this.runValidation();
+                    break;
+                case 'debug':
+                    this.handleDebugCommand(subcommand);
                     break;
                 case 'help':
                     this.showHelp();
@@ -299,6 +315,26 @@ class WarpCoordinator {
         });
     }
 
+    startDashboard() {
+        const port = this.getArg('--port') || 3000;
+        const projectRoot = this.getArg('--project') || process.cwd();
+        
+        console.log('🚀 Starting Warp Multithreaded Dashboard...');
+        console.log(`📁 Project: ${projectRoot}`);
+        console.log(`🌐 Port: ${port}`);
+        
+        try {
+            const DashboardServer = require('../dashboard/server');
+            const dashboard = new DashboardServer(port, projectRoot);
+            dashboard.start();
+        } catch (error) {
+            console.error('❌ Failed to start dashboard:', error.message);
+            console.log('\n💡 Make sure to install dependencies first:');
+            console.log('   npm install');
+            process.exit(1);
+        }
+    }
+
     generateCoordinationTemplate(config) {
         const sessions = Object.keys(config.sessions);
         
@@ -348,6 +384,384 @@ ${sessions.map(name => {
 *Last updated: ${new Date().toISOString()}*`;
     }
 
+    // Masterplan Management Commands
+    handleMasterplanCommand(subcommand) {
+        const masterplan = new MasterplanManager();
+        
+        switch (subcommand) {
+            case 'init':
+                this.initMasterplan(masterplan);
+                break;
+            case 'status':
+                this.showMasterplanStatus(masterplan);
+                break;
+            case 'tasks':
+                this.showTasks(masterplan);
+                break;
+            case 'add-task':
+                this.addTask(masterplan);
+                break;
+            case 'complete-task':
+                this.completeTask(masterplan);
+                break;
+            case 'generate-tasks':
+                this.generateTasks(masterplan);
+                break;
+            case 'log-session':
+                this.logSession(masterplan);
+                break;
+            default:
+                console.error(`Unknown masterplan subcommand: ${subcommand}`);
+                this.showMasterplanHelp();
+        }
+    }
+
+    initMasterplan(masterplan) {
+        const name = this.getArg('--name') || path.basename(process.cwd());
+        const description = this.getArg('--description') || '';
+        const goals = this.getArg('--goals') ? this.getArg('--goals').split(',').map(g => g.trim()) : [];
+        const technologies = this.getArg('--technologies') ? this.getArg('--technologies').split(',').map(t => t.trim()) : [];
+        const architecture = this.getArg('--architecture') || '';
+        const requirements = this.getArg('--requirements') ? this.getArg('--requirements').split(',').map(r => r.trim()) : [];
+
+        console.log('🧠 Initializing Masterplan Mode...');
+        
+        const summary = masterplan.initializeMasterplan({
+            name,
+            description,
+            goals,
+            technologies,
+            architecture,
+            requirements
+        });
+
+        console.log('\n📋 Masterplan Summary:');
+        console.log(`   📁 Project: ${summary.project.name}`);
+        console.log(`   📊 Status: ${summary.project.status}`);
+        console.log(`   🎯 Phase: ${summary.project.phase}`);
+        console.log(`   📝 Files created:`);
+        Object.entries(summary.files).forEach(([type, file]) => {
+            console.log(`      ${type}: ${file}`);
+        });
+        
+        console.log('\n🚀 Next steps:');
+        console.log('   1. node coordinator.js masterplan tasks     # View current tasks');
+        console.log('   2. node coordinator.js masterplan add-task --title="Your task"');
+        console.log('   3. node coordinator.js context              # Get AI session context');
+    }
+
+    showMasterplanStatus(masterplan) {
+        const status = masterplan.getStatus();
+        
+        if (!status.initialized) {
+            console.log('❌ Masterplan not initialized');
+            console.log('\n💡 Run: node coordinator.js masterplan init');
+            return;
+        }
+
+        console.log('\n🧠 Masterplan Status\n');
+        console.log(`📁 Project: ${status.project.name}`);
+        console.log(`📊 Status: ${status.project.status}`);
+        console.log(`🎯 Phase: ${status.project.phase}`);
+        console.log(`📈 Progress: ${status.progress.completion_rate}%`);
+        console.log(`🔄 Sessions: ${status.total_sessions}`);
+        console.log(`⏰ Last Updated: ${new Date(status.last_updated).toLocaleString()}`);
+        
+        console.log('\n📋 Tasks Overview:');
+        console.log(`   📝 Pending: ${status.tasks.pending}`);
+        console.log(`   ✅ Completed: ${status.tasks.completed}`);
+        console.log(`   📊 Total: ${status.tasks.total}`);
+        
+        console.log('\n🗂️ Files Status:');
+        Object.entries(status.files_exist).forEach(([type, exists]) => {
+            const status = exists ? '✅' : '❌';
+            console.log(`   ${status} ${type}`);
+        });
+    }
+
+    showTasks(masterplan) {
+        const tasks = masterplan.getTasks();
+        
+        console.log('\n📋 Project Tasks\n');
+        
+        if (tasks.tasks.length === 0) {
+            console.log('📭 No pending tasks');
+            console.log('\n💡 Generate tasks: node coordinator.js masterplan generate-tasks');
+            console.log('💡 Add task: node coordinator.js masterplan add-task --title="Task title"');
+        } else {
+            console.log(`📝 Pending Tasks (${tasks.tasks.length}):\n`);
+            tasks.tasks.forEach((task, index) => {
+                console.log(`${index + 1}. **${task.title}** (${task.priority})`);
+                console.log(`   📝 ${task.description}`);
+                console.log(`   ⏱️  ${task.estimated_time}`);
+                console.log(`   🏷️  ${task.tags.join(', ')}`);
+                console.log(`   🆔 ID: ${task.id}`);
+                console.log('');
+            });
+        }
+        
+        if (tasks.completed.length > 0) {
+            console.log(`✅ Recently Completed (${Math.min(tasks.completed.length, 3)}):`);
+            tasks.completed.slice(-3).forEach(task => {
+                console.log(`   ✅ ${task.title} (${task.completed?.split('T')[0]})`);
+            });
+            console.log('');
+        }
+    }
+
+    addTask(masterplan) {
+        const title = this.getArg('--title');
+        if (!title) {
+            console.error('❌ Task title is required. Use --title="Task title"');
+            return;
+        }
+
+        const description = this.getArg('--description') || '';
+        const priority = this.getArg('--priority') || 'medium';
+        const estimatedTime = this.getArg('--time') || 'unknown';
+        const tags = this.getArg('--tags') ? this.getArg('--tags').split(',').map(t => t.trim()) : [];
+        const session = this.getArg('--session') || null;
+
+        const task = masterplan.addTask({
+            title,
+            description,
+            priority,
+            estimated_time: estimatedTime,
+            tags,
+            assigned_session: session,
+            generated_by: 'manual'
+        });
+
+        console.log(`✅ Task added: ${task.title}`);
+        console.log(`🆔 Task ID: ${task.id}`);
+    }
+
+    completeTask(masterplan) {
+        const taskId = this.getArg('--id');
+        if (!taskId) {
+            console.error('❌ Task ID is required. Use --id=task-id');
+            console.log('\n💡 View tasks with IDs: node coordinator.js masterplan tasks');
+            return;
+        }
+
+        const notes = this.getArg('--notes') || '';
+        const session = this.getArg('--session') || 'unknown';
+
+        try {
+            const task = masterplan.completeTask(taskId, { notes, session });
+            console.log(`✅ Task completed: ${task.title}`);
+            console.log(`📝 Notes: ${notes || 'No additional notes'}`);
+        } catch (error) {
+            console.error(`❌ ${error.message}`);
+        }
+    }
+
+    generateTasks(masterplan) {
+        const phase = this.getArg('--phase') || 'development';
+        const focus = this.getArg('--focus') ? this.getArg('--focus').split(',').map(f => f.trim()) : [];
+        
+        console.log('🤖 Generating AI tasks...');
+        
+        const tasks = masterplan.generateAITasks({
+            project_phase: phase,
+            current_focus: focus
+        });
+
+        console.log(`✅ Generated ${tasks.length} tasks`);
+        tasks.forEach(task => {
+            console.log(`   📝 ${task.title} (${task.priority})`);
+        });
+    }
+
+    logSession(masterplan) {
+        const sessionName = this.getArg('--session') || 'unknown';
+        const summary = this.getArg('--summary') || 'Session summary not provided';
+        const outcomes = this.getArg('--outcomes') ? this.getArg('--outcomes').split(',').map(o => o.trim()) : [];
+        const decisions = this.getArg('--decisions') ? this.getArg('--decisions').split(',').map(d => d.trim()) : [];
+        const nextGoals = this.getArg('--next-goals') ? this.getArg('--next-goals').split(',').map(g => g.trim()) : [];
+        const duration = this.getArg('--duration') || 'unknown';
+
+        masterplan.logSession({
+            session_name: sessionName,
+            summary,
+            key_outcomes: outcomes,
+            decisions,
+            next_goals: nextGoals,
+            duration
+        });
+
+        console.log(`📝 Session logged: ${sessionName}`);
+    }
+
+    async runValidation() {
+        console.log('🔍 Running system validation...');
+        try {
+            const SystemValidator = require('./validate-system');
+            const validator = new SystemValidator();
+            await validator.runValidation();
+        } catch (error) {
+            console.error('❌ Validation failed:', error.message);
+            process.exit(1);
+        }
+    }
+
+    handleDebugCommand(subcommand) {
+        switch (subcommand) {
+            case 'files':
+                this.debugFiles();
+                break;
+            case 'sessions':
+                this.debugSessions();
+                break;
+            case 'masterplan':
+                this.debugMasterplan();
+                break;
+            default:
+                console.log('Debug commands: files, sessions, masterplan');
+        }
+    }
+
+    debugFiles() {
+        console.log('🗂️ Checking file system state...');
+        const fs = require('fs');
+        
+        const checkDir = (dirPath, name) => {
+            if (fs.existsSync(dirPath)) {
+                const files = fs.readdirSync(dirPath);
+                console.log(`  ${name}: ${files.length} files`);
+                files.forEach(file => console.log(`    - ${file}`));
+            } else {
+                console.log(`  ${name}: Directory does not exist`);
+            }
+        };
+        
+        checkDir('.warp-sessions', 'Sessions');
+        checkDir('.warp-masterplan', 'Masterplan');
+        
+        // Check config files
+        const configFiles = ['.warp-config.json', '.warp-coordination.md'];
+        console.log('\n  Config Files:');
+        configFiles.forEach(file => {
+            const exists = fs.existsSync(file) ? '✅' : '❌';
+            console.log(`    ${exists} ${file}`);
+        });
+    }
+
+    debugSessions() {
+        console.log('🔍 Active session details...');
+        const sessions = this.sessionManager.getActiveSessions();
+        
+        if (sessions.length === 0) {
+            console.log('  No active sessions found');
+            return;
+        }
+        
+        sessions.forEach(session => {
+            console.log(`\n  Session: ${session.name}`);
+            console.log(`    ID: ${session.id}`);
+            console.log(`    Status: ${session.status}`);
+            console.log(`    Focus: ${session.focus.join(', ')}`);
+            console.log(`    Active files: ${session.active_files.length}`);
+            console.log(`    Last active: ${session.last_active}`);
+            if (session.active_files.length > 0) {
+                console.log(`    Files:`);
+                session.active_files.forEach(file => console.log(`      - ${file}`));
+            }
+        });
+    }
+
+    debugMasterplan() {
+        console.log('📋 Masterplan state...');
+        const masterplan = new MasterplanManager();
+        
+        if (!masterplan.exists()) {
+            console.log('  Masterplan not initialized');
+            return;
+        }
+        
+        const status = masterplan.getStatus();
+        console.log('  Status:', JSON.stringify(status, null, 2));
+        
+        const tasks = masterplan.getTasks();
+        console.log(`\n  Tasks: ${tasks.tasks.length} pending, ${tasks.completed.length} completed`);
+        
+        console.log('\n  Recent tasks:');
+        tasks.tasks.slice(0, 3).forEach(task => {
+            console.log(`    - ${task.title} (${task.priority})`);
+        });
+    }
+
+    showContext() {
+        const masterplan = new MasterplanManager();
+        
+        if (!masterplan.exists()) {
+            console.log('❌ Masterplan not initialized');
+            console.log('\n💡 Run: node coordinator.js masterplan init');
+            return;
+        }
+
+        const sessionName = this.getArg('--session') || 'ai-agent';
+        const context = masterplan.generateSessionContext(sessionName);
+        
+        console.log('\n🧠 AI Session Context\n');
+        console.log(context.session_context);
+        
+        // Optionally save to file for easy copy-paste
+        const saveFile = this.getArg('--save');
+        if (saveFile) {
+            fs.writeFileSync(saveFile, context.session_context);
+            console.log(`\n💾 Context saved to: ${saveFile}`);
+        }
+    }
+
+    showMasterplanHelp() {
+        console.log(`
+Masterplan Management Commands:
+
+  init                           Initialize masterplan for project
+    --name=<name>                Project name
+    --description=<desc>         Project description
+    --goals=<goals>              Comma-separated goals
+    --technologies=<techs>       Comma-separated technologies
+    --architecture=<arch>        Architecture description
+    --requirements=<reqs>        Comma-separated requirements
+
+  status                         Show masterplan status
+  tasks                          List all tasks
+  
+  add-task                       Add a new task
+    --title=<title>              Task title (required)
+    --description=<desc>         Task description
+    --priority=<priority>        Priority: low, medium, high
+    --time=<estimate>            Time estimate
+    --tags=<tags>                Comma-separated tags
+    --session=<session>          Assigned session
+  
+  complete-task                  Mark task as completed
+    --id=<task-id>               Task ID (required)
+    --notes=<notes>              Completion notes
+    --session=<session>          Completing session
+  
+  generate-tasks                 Generate AI tasks
+    --phase=<phase>              Project phase
+    --focus=<areas>              Focus areas
+  
+  log-session                    Log session activity
+    --session=<name>             Session name
+    --summary=<summary>          Session summary
+    --outcomes=<outcomes>        Key outcomes
+    --decisions=<decisions>      Decisions made
+    --next-goals=<goals>         Next session goals
+    --duration=<time>            Session duration
+
+Examples:
+  node coordinator.js masterplan init --name="My Project" --description="A web app"
+  node coordinator.js masterplan add-task --title="Fix navbar" --priority=high
+  node coordinator.js masterplan complete-task --id=task-123 --notes="Fixed styling"
+  node coordinator.js context --session=frontend --save=context.md
+        `);
+    }
+
     getArg(argName) {
         const arg = this.args.find(a => a.startsWith(argName));
         return arg ? arg.split('=')[1] : null;
@@ -377,6 +791,17 @@ COMMANDS:
   status                         Show framework status overview
   conflicts                      Check for file conflicts
   suggest --tasks=<tasks>        Get task distribution suggestions
+  dashboard                      Start web dashboard server
+    --port=<port>               Dashboard port (default: 3000)
+    --project=<path>            Project path (default: current directory)
+
+  masterplan <subcommand>        Manage project masterplan (see masterplan help)
+  context                        Show AI session context
+    --session=<name>            Session name
+    --save=<file>               Save context to file
+
+  validate                       Run system validation tests
+  debug <command>                Debug system state (files, sessions, masterplan)
 
   help                           Show this help message
 
