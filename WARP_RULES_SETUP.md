@@ -1,78 +1,64 @@
 # Warp Rules Integration Setup
 
-This guide shows how to integrate the Warp AI Agent Framework with Warp Drive/Rules for automatic session coordination.
+This guide shows how to integrate the Warp Multithreaded Framework with Warp Drive/Rules for automatic session coordination.
 
 ## 🎯 What Are Warp Rules?
 
-Warp Rules automatically inform AI Agents about project context, coordination protocols, and session-specific guidelines without you having to explain it every time.
+Warp Rules automatically inform AI Agents about the framework capabilities, project context, and coordination protocols without you having to explain it every time.
 
-## 📋 Available Rule Files
+## 📋 Single Framework Rule - Simplified Approach
 
-The framework includes these pre-configured Warp Rules:
+The framework now uses **ONE unified rule** that teaches AI agents how to work with the framework:
 
-### **1. General Coordination Rules**
-- **File**: `warp-rules/multi-session-coordination.md`
-- **Purpose**: Basic multi-session awareness and coordination protocol
-- **Use**: Add to any project using the framework
-
-### **2. Frontend Session Rules**  
-- **File**: `warp-rules/frontend-session-rules.md`
-- **Purpose**: Specific guidelines for frontend-focused AI Agent sessions
-- **Use**: Add to terminals/sessions working on UI, components, styling
-
-### **3. Backend Session Rules**
-- **File**: `warp-rules/backend-session-rules.md`  
-- **Purpose**: Specific guidelines for backend-focused AI Agent sessions
-- **Use**: Add to terminals/sessions working on APIs, database, server logic
+### **Warp Multithreaded Framework Rule**
+- **File**: `WARP_MULTITHREADED_FRAMEWORK_RULE.md`
+- **Purpose**: Complete framework understanding for AI agents
+- **Scope**: General framework operation (NOT project-specific)
+- **Use**: Add to your Warp Drive for all projects using this framework
 
 ## 🚀 Integration Methods
 
 ### **Method 1: Warp Drive Integration (Recommended)**
 
-If your Warp supports Warp Drive, add these files to your drive:
+Add the single framework rule to your Warp Drive:
 
-1. **Copy the rule files to your Warp Drive:**
+1. **Copy the framework rule to your Warp Drive:**
    ```bash
    # Copy to your Warp Drive folder
-   cp warp-rules/multi-session-coordination.md ~/WarpDrive/
-   cp warp-rules/frontend-session-rules.md ~/WarpDrive/
-   cp warp-rules/backend-session-rules.md ~/WarpDrive/
+   cp WARP_MULTITHREADED_FRAMEWORK_RULE.md ~/WarpDrive/
    ```
 
-2. **Reference in your Warp sessions:**
+2. **Reference in any project using the framework:**
    ```
-   Human: Use the multi-session-coordination and frontend-session-rules from my Warp Drive.
+   Human: Use the WARP_MULTITHREADED_FRAMEWORK_RULE from my Warp Drive.
+   I want to build a task management app.
    ```
 
-### **Method 2: Project-Local Rules**
+### **Method 2: Direct Reference**
 
-For project-specific coordination:
+For immediate use without Warp Drive:
 
-1. **Copy rules to your project:**
+1. **Tell your AI Agent to follow the framework rule:**
+   ```
+   Human: Follow the Warp Multithreaded Framework rule in WARP_MULTITHREADED_FRAMEWORK_RULE.md.
+   I need to create a real-time chat application.
+   ```
+
+### **Method 3: Masterplan Setup First**
+
+For new projects - **RECOMMENDED WORKFLOW**:
+
+1. **Set up the project with Masterplan Mode:**
    ```bash
-   # In your project directory
-   mkdir .warp-rules
-   cp /path/to/framework/warp-rules/* .warp-rules/
+   # Run masterplan wizard to generate project-specific setup
+   node scripts/masterplan-wizard.js
+   # This creates masterplan-goal.md and .warp-unified-rules.md
    ```
 
-2. **Tell your AI Agent:**
+2. **Then tell your AI Agent:**
    ```
-   Human: Follow the coordination rules in .warp-rules/multi-session-coordination.md 
-   and the frontend-session-rules.md for this session.
-   ```
-
-### **Method 3: Direct Copy-Paste**
-
-For immediate use:
-
-1. **Copy rule content** from the markdown files
-2. **Paste into Warp terminal:**
-   ```
-   Human: Please follow these coordination rules:
-
-   [paste rule content here]
-
-   I'm working in a frontend session on UI tasks.
+   Human: Follow the Warp Multithreaded Framework rule and use the project-specific 
+   rules generated in .warp-unified-rules.md. Let's start building.
    ```
 
 ## 🛠️ Setup Workflow

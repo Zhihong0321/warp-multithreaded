@@ -34,9 +34,7 @@ class WarpCoordinator {
                 case 'init':
                     await this.initProject();
                     break;
-                case 'session':
-                    this.handleSessionCommand(subcommand);
-                    break;
+                // NOTE: Session management is FULLY AUTOMATED - no manual commands needed
                 case 'status':
                     this.showStatus();
                     break;
@@ -76,6 +74,9 @@ class WarpCoordinator {
                 case 'update-state':
                 case 'save-state':
                     await this.updateProjectState();
+                    break;
+                case 'load-state':
+                    await this.loadProjectState();
                     break;
                 case 'shutdown':
                     await this.shutdownSession();
@@ -185,30 +186,13 @@ class WarpCoordinator {
         console.log(`📝 Configuration saved to: .warp-config.json`);
         console.log(`📋 Coordination file created: .warp-coordination.md`);
         console.log(`\n🚀 Next steps:`);
-        console.log(`   1. warp-agent session create --name=frontend`);
-        console.log(`   2. warp-agent session create --name=backend`);
-        console.log(`   3. warp-agent status`);
+        console.log(`   1. Just start describing what you want to build`);
+        console.log(`   2. The framework will auto-create sessions as needed`);
+        console.log(`   3. Use: node coordinator.js status`);
     }
 
-    handleSessionCommand(subcommand) {
-        switch (subcommand) {
-            case 'create':
-                this.createSession();
-                break;
-            case 'list':
-                this.listSessions();
-                break;
-            case 'close':
-                this.closeSession();
-                break;
-            case 'info':
-                this.sessionInfo();
-                break;
-            default:
-                console.error(`Unknown session subcommand: ${subcommand}`);
-                this.showSessionHelp();
-        }
-    }
+    // SESSION MANAGEMENT IS FULLY AUTOMATED - These methods kept for internal use only
+    // Users should never call these directly
 
     createSession() {
         const name = this.getArg('--name');
@@ -827,113 +811,91 @@ ${sessions.map(name => {
         }
     }
 
-    // Session State Management
+    // Project Documentation State Management
     async updateProjectState() {
-        console.log('💾 Updating project state...');
+        console.log('📝 Updating project documentation and status...');
         
-        const sessionName = this.getArg('--session');
         const summary = this.getArg('--summary');
         const outcomes = this.getArg('--outcomes');
         const decisions = this.getArg('--decisions');
         const nextGoals = this.getArg('--next-goals');
-        const checkpoint = this.getArg('--checkpoint');
+        const tasks = this.getArg('--tasks');
+        const issues = this.getArg('--issues');
+        const progress = this.getArg('--progress');
         const interactive = this.getArg('--interactive') !== 'false';
-        const autoSave = this.getArg('--auto') === 'true';
+        const updateFiles = this.getArg('--files') || 'all';
         
         try {
-            const masterplan = new MasterplanManager();
-            
-            if (!masterplan.exists()) {
-                console.log('⚠️  Masterplan not initialized - creating basic state record...');
-                await this.createBasicStateRecord();
-                return;
-            }
-
-            // Get current project state
-            const sessions = this.sessionManager.getActiveSessions();
-            const status = this.sessionManager.getStatusOverview();
-            const masterplanStatus = masterplan.getStatus();
-            
-            console.log(`\n📊 Current State:`);
-            console.log(`   🔄 Active sessions: ${sessions.length}`);
-            console.log(`   📁 Files in use: ${sessions.reduce((total, s) => total + s.active_files.length, 0)}`);
-            console.log(`   ⚠️  Conflicts: ${status.conflicts.length}`);
-            console.log(`   📝 Pending tasks: ${masterplanStatus.tasks.pending}`);
-            console.log(`   ✅ Completed tasks: ${masterplanStatus.tasks.completed}`);
-            
-            // Handle auto-save (no prompts)
-            if (autoSave) {
-                const autoSessionData = {
-                    session_name: sessionName || 'auto-save',
-                    summary: summary || `Auto-save checkpoint at ${new Date().toLocaleTimeString()}`,
-                    key_outcomes: outcomes ? outcomes.split(',').map(o => o.trim()) : [],
-                    decisions: decisions ? decisions.split(',').map(d => d.trim()) : [],
-                    next_goals: nextGoals ? nextGoals.split(',').map(g => g.trim()) : [],
-                    duration: 'auto-save',
-                    checkpoint: checkpoint || 'development-progress',
-                    active_sessions: sessions.map(s => ({
-                        name: s.name,
-                        focus: s.focus,
-                        active_files: s.active_files,
-                        current_task: s.current_task
-                    })),
-                    conflicts: status.conflicts,
-                    update_time: new Date().toISOString(),
-                    type: 'state-update'
-                };
-                
-                await this.saveProjectState(autoSessionData, masterplan);
-                console.log('✅ Auto-save completed!');
-                return;
-            }
+            // Get current project information
+            const projectInfo = await this.gatherProjectInfo();
             
             // Interactive mode - ask for details if not provided
             if (interactive && !summary) {
-                console.log('\n📝 Save current development state:');
-                console.log('   Use: --summary="What has been accomplished so far"');
-                console.log('   Use: --outcomes="feature1,bugfix2,improvement3" for specific outcomes');
-                console.log('   Use: --decisions="choice1,approach2" for decisions made');
-                console.log('   Use: --next-goals="task1,task2" for immediate next steps');
-                console.log('   Use: --checkpoint="milestone-name" for named checkpoint');
+                console.log('\n📝 Update project documentation with current status:');
+                console.log('   Use: --summary="What has been accomplished in this session"');
+                console.log('   Use: --outcomes="feature1,bugfix2,improvement3" for completed work');
+                console.log('   Use: --decisions="tech_choice1,approach2" for decisions made');
+                console.log('   Use: --next-goals="task1,task2" for upcoming work');
+                console.log('   Use: --tasks="task1:done,task2:in-progress" for task status');
+                console.log('   Use: --issues="bug1:fixed,issue2:investigating" for issue status');
+                console.log('   Use: --progress="75" for overall progress percentage');
+                console.log('   Use: --files="readme,changelog,progress" to specify which files to update');
                 console.log('\n💡 Examples:');
-                console.log('   warp-multithreaded update-state --summary="Implemented user auth" --checkpoint="auth-complete"');
-                console.log('   warp-multithreaded update-state --auto  # Quick auto-save');
+                console.log('   npm run update-state -- --summary="Implemented user authentication" --outcomes="login,signup,password-reset" --progress="60"');
+                console.log('   npm run update-state -- --summary="Fixed deployment issues" --issues="deploy-error:fixed,ssl-cert:resolved"');
                 return;
             }
 
-            // Create state update record
-            const stateData = {
-                session_name: sessionName || 'development',
-                summary: summary || 'Development checkpoint - no summary provided',
-                key_outcomes: outcomes ? outcomes.split(',').map(o => o.trim()) : [],
+            const updateData = {
+                timestamp: new Date().toISOString(),
+                summary: summary || 'Documentation update - no summary provided',
+                outcomes: outcomes ? outcomes.split(',').map(o => o.trim()) : [],
                 decisions: decisions ? decisions.split(',').map(d => d.trim()) : [],
                 next_goals: nextGoals ? nextGoals.split(',').map(g => g.trim()) : [],
-                duration: 'ongoing',
-                checkpoint: checkpoint || `checkpoint-${Date.now()}`,
-                active_sessions: sessions.map(s => ({
-                    name: s.name,
-                    focus: s.focus,
-                    active_files: s.active_files,
-                    current_task: s.current_task
-                })),
-                conflicts: status.conflicts,
-                update_time: new Date().toISOString(),
-                type: 'state-update'
+                task_updates: this.parseTaskUpdates(tasks),
+                issue_updates: this.parseIssueUpdates(issues),
+                progress_percentage: progress ? parseInt(progress) : null,
+                project_info: projectInfo
             };
 
-            await this.saveProjectState(stateData, masterplan);
+            // Update different documentation files
+            await this.updateProjectDocumentation(updateData, updateFiles);
             
-            console.log('\n✅ Project state updated!');
-            console.log(`📝 Checkpoint: ${stateData.checkpoint}`);
-            console.log(`💾 State snapshot saved`);
-            console.log(`\n🔄 Continue development or use:`);
-            console.log(`   warp-multithreaded context --save=current-context.md`);
-            console.log(`   warp-multithreaded startup  # For full context view`);
+            console.log('\n✅ Project documentation updated!');
+            console.log(`📝 Summary: ${updateData.summary}`);
+            console.log(`📊 Updated files for AI agent reference`);
+            console.log(`\n🔄 Next time an AI agent starts, they can read:`);
+            console.log(`   - PROJECT_STATUS.md for current progress`);
+            console.log(`   - DEVELOPMENT_LOG.md for recent changes`);
+            console.log(`   - README.md for updated project info`);
+            console.log(`   - TASKS.md for current task status`);
             
         } catch (error) {
-            console.error('❌ Failed to update project state:', error.message);
-            console.log('\n💡 Creating basic state record...');
-            await this.createBasicStateRecord();
+            console.error('❌ Failed to update project documentation:', error.message);
+            console.log('\n💡 Make sure you have write permissions in the project directory');
+        }
+    }
+
+    async loadProjectState() {
+        console.log('🔄 Loading last saved project state...');
+        const snapshotPath = path.join(process.cwd(), '.warp-session-snapshot.json');
+
+        if (!fs.existsSync(snapshotPath)) {
+            console.error('❌ No saved state found. Please make sure to update state before attempting to load it.');
+            return;
+        }
+
+        try {
+            const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+            console.log('\n🔄 Previous Development State:');
+            console.log(`   🕒 Timestamp: ${snapshot.timestamp}`);
+            console.log(`   📊 Summary: ${snapshot.session_summary.summary}`);
+            console.log(`   🎯 Checkpoint: ${snapshot.checkpoint}`);
+            console.log(`   ⚠️  Conflicts: ${snapshot.project_state.status.conflicts.length}`);
+            console.log(`   🔄 Restore sessions if needed using custom commands.`);
+            console.log('');
+        } catch (error) {
+            console.error('❌ Failed to load project state:', error.message);
         }
     }
 
@@ -1217,6 +1179,29 @@ ${sessions.map(name => {
         console.log('💡 For full session tracking, run: warp-multithreaded init');
     }
 
+    // FULLY AUTOMATED: Auto-detect current session context
+    autoDetectCurrentSession() {
+        try {
+            // Get active sessions
+            const sessions = this.sessionManager.getActiveSessions();
+            
+            if (sessions.length === 0) {
+                return 'auto-detected-initial';
+            }
+            
+            // Find most recently active session
+            const mostRecentSession = sessions.reduce((latest, current) => {
+                return new Date(current.last_active) > new Date(latest.last_active) ? current : latest;
+            });
+            
+            return mostRecentSession.name;
+            
+        } catch (error) {
+            console.log('⚠️  Auto-detection fallback: using default session name');
+            return 'development-session';
+        }
+    }
+
     generateRecoveryContext(sessionData) {
         return `
 # Development Session Recovery Context
@@ -1485,12 +1470,10 @@ COMMANDS:
     --project=<path>            Project path (default: current directory)
 
   masterplan <subcommand>        Manage project masterplan (see masterplan help)
-  context                        Show AI session context
-    --session=<name>            Session name
+  context                        Show AI session context (FULLY AUTOMATED)
     --save=<file>               Save context to file
 
-  update-state / save-state      Save current development state (can be used during development)
-    --session=<name>            Session name
+  update-state / save-state      Save current development state (FULLY AUTOMATED)
     --summary=<text>            What has been accomplished
     --outcomes=<list>           Key outcomes (comma-separated)
     --decisions=<list>          Decisions made (comma-separated)
@@ -1499,8 +1482,9 @@ COMMANDS:
     --auto                      Quick auto-save without prompts
     --interactive=false         Skip interactive prompts
 
+  load-state                     Load previous development state for quick context
+
   shutdown                       End development session with context preservation
-    --session=<name>            Session name
     --summary=<text>            What was accomplished
     --outcomes=<list>           Key outcomes (comma-separated)
     --decisions=<list>          Decisions made (comma-separated)
@@ -1508,8 +1492,7 @@ COMMANDS:
     --close-sessions=true        Close all active sessions
     --interactive=false          Skip interactive prompts
 
-  startup / resume               Resume development with full context
-    --session=<name>            Session name for context
+  startup / resume               Resume development with full context (FULLY AUTOMATED)
     --show-context=true          Display AI context
     --save-context=<file>       Save context to file
     --restore-sessions=true      Restore previous sessions
@@ -1521,10 +1504,9 @@ COMMANDS:
 
 EXAMPLES:
   node coordinator.js init --project-type=web-app
-  node coordinator.js session create --name=frontend --focus=ui,components
-  node coordinator.js session list
   node coordinator.js status
-  node coordinator.js suggest --tasks="fix navbar,add auth,write tests"
+  node coordinator.js update-state --summary="Implemented user auth" --auto
+  node coordinator.js masterplan tasks
 
 For more information, visit: https://github.com/yourusername/warp-agent-framework
         `);

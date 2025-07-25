@@ -4,7 +4,8 @@
   "description": "Enable multithreaded AI agent development with coordinated parallel sessions in Warp Terminal",
   "main": "core/session-manager.js",
   "bin": {
-    "warp-multithreaded": "./scripts/coordinator.js"
+    "warp-multithreaded": "./scripts/coordinator.js",
+    "wm": "./wm.js"
   },
   "scripts": {
     "test": "node test/run-tests.js",
@@ -18,12 +19,20 @@
     "dashboard": "node dashboard/server.js",
     "cli-service": "node scripts/dashboard-cli-service.js",
     "masterplan": "node scripts/generate-unified-rules.js",
+    "masterplan-wizard": "node scripts/masterplan-wizard.js",
     "goal": "node scripts/goal-manager.js",
     "setup:windows": "powershell -ExecutionPolicy Bypass -File scripts/setup-windows.ps1",
     "setup:unix": "bash scripts/setup-unix.sh",
     "rules:check": "node scripts/rules-checker.js --status",
     "rules:setup": "node scripts/rules-checker.js --setup",
     "rules:verify": "node scripts/rules-checker.js --verify",
+    "update-state": "node scripts/coordinator.js update-state",
+    "load-state": "node scripts/coordinator.js load-state",
+    "save-state": "node scripts/coordinator.js update-state",
+    "startup": "node scripts/coordinator.js startup",
+    "shutdown": "node scripts/coordinator.js shutdown",
+    "tasks": "node scripts/coordinator.js masterplan tasks",
+    "context": "node scripts/coordinator.js context",
     "postinstall": "node scripts/health-check.js"
   },
   "keywords": [

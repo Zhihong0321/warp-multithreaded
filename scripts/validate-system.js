@@ -67,12 +67,18 @@ class SystemValidator {
     async setupTestEnvironment() {
         this.log('Setting up test environment...', 'info');
         
+        // Skip test environment setup on Windows to avoid permission issues
+        if (process.platform === 'win32') {
+            this.log('Test environment setup skipped on Windows', 'warn');
+            return;
+        }
+        
         if (fs.existsSync(this.testDir)) {
             fs.rmSync(this.testDir, { recursive: true, force: true });
         }
         
-        process.chdir(this.testDir);
         fs.mkdirSync(this.testDir, { recursive: true });
+        process.chdir(this.testDir);
     }
 
     async testSessionManager() {

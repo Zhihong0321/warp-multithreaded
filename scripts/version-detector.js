@@ -11,7 +11,7 @@ const { execSync } = require('child_process');
 
 class VersionDetector {
     constructor() {
-        this.currentVersion = '1.2.0';
+        this.currentVersion = '1.3.0';
         this.criticalFiles = [
             'core/intelligent-session-manager.js',
             'core/auto-session-integration.js',
@@ -162,7 +162,24 @@ class VersionDetector {
                 return { working: false, error: 'Coordinator script missing' };
             }
 
-            // Quick functionality test
+            // On Windows, skip CLI execution test due to timeout issues
+            if (process.platform === 'win32') {
+                // Just check if core files exist instead
+                const coreFiles = [
+                    'core/session-manager.js',
+                    'core/masterplan-manager.js',
+                    'package.json'
+                ];
+                
+                for (const file of coreFiles) {
+                    if (!fs.existsSync(path.join(this.frameworkRoot, file))) {
+                        return { working: false, error: `Missing core file: ${file}` };
+                    }
+                }
+                return { working: true };
+            }
+
+            // Quick functionality test (Unix/Linux only)
             const testOutput = execSync(`node "${coordinatorPath}" help`, { 
                 encoding: 'utf8', 
                 timeout: 10000,

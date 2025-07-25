@@ -86,6 +86,8 @@ npm install
 
 # Verify installation
 npm run health-check
+
+# The 'wm' command will be available for short CLI usage
 ```
 
 ### 2. Create Your Masterplan (NEW)
@@ -130,6 +132,62 @@ npm run cli-service          # Start dashboard with CLI integration
 # System Management
 npm run status               # Check coordination status
 npm run validate             # Validate system health
+```
+
+## 🆕 Latest Features
+
+### ⚡ **Short CLI Commands** (NEW)
+Use the `wm` command for faster workflow:
+
+```bash
+# State management
+wm load-state                  # Load previous development state
+wm save-state --summary="..."  # Save current state
+wm update-state               # Update project documentation
+
+# Session management  
+wm startup                    # Resume development with context
+wm shutdown --summary="..."   # End session with summary
+wm status                     # Show framework status
+wm sessions                   # List active sessions
+
+# Tasks and planning
+wm tasks                      # List all project tasks
+wm add-task --title="..."     # Add new task
+wm complete-task --id=...     # Mark task completed
+
+# Context and analysis
+wm context --save=context.md  # Generate AI context
+wm conflicts                  # Check file conflicts
+```
+
+### 🔄 **Session Continuity** (NEW)
+Never lose development context again:
+
+```bash
+# Save your work during development
+wm save-state --summary="Implemented user authentication" --auto
+
+# End your development session
+wm shutdown --summary="What was accomplished" --next-goals="What to do next"
+
+# Resume where you left off
+wm load-state                 # Quick context check
+wm startup                    # Full resume with context
+```
+
+### 🚀 **Improved Setup Process** (NEW)
+Streamlined initialization with better error handling:
+
+```bash
+# Initialize with automatic Warp Rules setup
+node scripts/coordinator.js init --project-type=web-app
+
+# System validates and guides you through setup
+node scripts/coordinator.js rules setup
+
+# Verify everything is working
+node scripts/coordinator.js rules verify
 ```
 
 ## 🏗️ Architecture
@@ -178,22 +236,65 @@ Create a `.warp-config.json` in your project root:
 
 ## 🛠️ Available Commands
 
+### Quick Commands (using `wm`)
 ```bash
-# Session management
-warp-agent session create --name=<session-name>
-warp-agent session list
-warp-agent session status
-warp-agent session close --name=<session-name>
+# State management
+wm load-state                     # Load previous development state
+wm save-state                     # Save current state with prompts
+wm update-state                   # Update project documentation
+wm startup                        # Resume development session
+wm shutdown                       # End development session
+
+# Project management
+wm status                         # Show framework status
+wm tasks                          # List all project tasks
+wm sessions                       # List active sessions
+wm context                        # Generate AI context
+wm conflicts                      # Check for file conflicts
 
 # Task management
-warp-agent task assign --session=<session> --task=<description>
-warp-agent task queue --session=<session>
-warp-agent task complete --id=<task-id>
+wm add-task --title="Task name"   # Add new task
+wm complete-task --id=task-123    # Mark task completed
+```
 
-# Coordination
-warp-agent sync                    # Sync with other sessions
-warp-agent conflicts               # Check for conflicts
-warp-agent merge --file=<filename> # Resolve merge conflicts
+### Full Commands (using full coordinator)
+```bash
+# State management
+node scripts/coordinator.js load-state
+node scripts/coordinator.js update-state --summary="..." --auto
+node scripts/coordinator.js shutdown --summary="..." --next-goals="..."
+node scripts/coordinator.js startup --show-context=true
+
+# Session management
+node scripts/coordinator.js session create --name=<session-name>
+node scripts/coordinator.js session list
+node scripts/coordinator.js status
+node scripts/coordinator.js conflicts
+
+# Masterplan management
+node scripts/coordinator.js masterplan tasks
+node scripts/coordinator.js masterplan add-task --title="..."
+node scripts/coordinator.js masterplan complete-task --id=...
+node scripts/coordinator.js context --save=context.md
+
+# Setup and validation
+node scripts/coordinator.js init --project-type=web-app
+node scripts/coordinator.js rules setup
+node scripts/coordinator.js validate
+```
+
+### NPM Scripts
+```bash
+# State management
+npm run load-state               # Load previous state
+npm run save-state               # Save current state
+npm run startup                   # Resume development
+npm run shutdown                  # End session
+
+# Project management
+npm run status                    # Show status
+npm run tasks                     # List tasks
+npm run context                   # Generate context
 ```
 
 ## 📊 Dashboard
@@ -206,6 +307,13 @@ The framework includes a web dashboard for visual coordination:
 - **Conflict Resolution**: GUI for resolving merge conflicts
 
 Access at: `http://localhost:3000/warp-dashboard`
+
+## 📚 Documentation
+
+- **[QUICK_COMMANDS.md](QUICK_COMMANDS.md)** - Complete guide to short CLI commands and workflow
+- **[USER_GUIDE.md](USER_GUIDE.md)** - Comprehensive user guide with daily workflow examples
+- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Detailed setup and first-time usage guide
+- **[SESSION_CONTINUITY_GUIDE.md](SESSION_CONTINUITY_GUIDE.md)** - Advanced session continuity features
 
 ## 🤝 Contributing
 
