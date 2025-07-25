@@ -262,13 +262,95 @@ node /path/to/warp-multithreaded/scripts/coordinator.js dashboard
 ```
 
 Access at `http://localhost:3000` to:
-- 📊 View all active sessions
-- 📋 Manage masterplan tasks  
-- ⚠️ Monitor file conflicts
-- 📈 Track project progress
-- 🎯 Edit project goals
-- 📝 View discussion history
-- 📚 Access development logs
+- 📊 **View all active sessions** - Real-time session monitoring
+- 📋 **Manage masterplan tasks** - Create, edit, complete, and delete tasks
+- ⚠️ **Monitor file conflicts** - Live conflict detection and resolution
+- 📈 **Track project progress** - Visual progress indicators and statistics
+- 🎯 **Edit project goals** - Update project vision and objectives in real-time
+- 📝 **View discussion history** - Browse and add strategic discussion summaries
+- 📚 **Access development logs** - Review and add development milestone entries
+- 🧠 **Session coordination** - Assign tasks to specific sessions
+- 🔄 **Live updates** - Real-time synchronization across all sessions
+
+## 🧠 Masterplan Manager - Your Project's Persistent Memory
+
+The Masterplan Manager maintains **complete project intelligence** across all sessions:
+
+### 📋 Documents Maintained Automatically
+
+1. **`masterplan.md`** - Your project's living blueprint:
+   - 🎯 Project overview and description
+   - 📊 Current status and progress tracking
+   - 🏗️ Technical architecture documentation
+   - 🚀 Technology stack and requirements
+   - 📈 Completion statistics
+   - 🧠 AI context summaries
+
+2. **`tasks.json`** - Smart task management:
+   - 📝 Active and completed tasks
+   - 🏷️ Priority levels (low, medium, high, critical)
+   - 🔄 Task status tracking
+   - 🎯 Session assignments
+   - 📅 Created and completion timestamps
+   - 🏗️ Task templates for common setups
+
+3. **`session-log.md`** - Chronological session record:
+   - 📅 Date-stamped session entries
+   - 🎯 Session goals and outcomes
+   - 🤝 AI handoff information
+   - 📊 Progress summaries
+   - 🔄 Next session planning
+
+4. **`decisions.md`** - Technical decision history:
+   - 🤔 Decision context and reasoning
+   - ⚖️ Alternatives considered
+   - ✅ Implementation details
+   - 📊 Impact assessment
+   - 📅 Decision timestamps
+
+5. **`context.json`** - Project metadata:
+   - 📊 Session statistics
+   - 🎯 Project status and phase
+   - 📈 Progress metrics
+   - 🔄 Active session tracking
+   - 📅 Timeline information
+
+### 🎯 Dashboard Masterplan Features
+
+#### ✏️ **Goal Editing**
+- **Real-time goal updates** through the dashboard
+- **Vision refinement** - Update project direction as it evolves
+- **Strategic alignment** - Ensure all sessions work toward the same goals
+- **Auto-sync** - Changes instantly available to all AI agents
+
+#### 📋 **Task Management**
+- **Create tasks** with priorities, categories, and detailed descriptions
+- **Edit tasks** - Update task details, priorities, and assignments
+- **Complete tasks** - Mark tasks as done with completion timestamps
+- **Delete tasks** - Remove obsolete or incorrect tasks
+- **Task assignment** - Assign specific tasks to development sessions
+- **Progress tracking** - Visual indicators of task completion status
+
+#### 💬 **Discussion History**
+- **Strategic discussions** - Record important project decisions
+- **Direction changes** - Document scope adjustments and pivots
+- **Architectural insights** - Capture key technical discussions
+- **Tagged entries** - Organize discussions by topic and category
+- **Timeline view** - Chronological record of project evolution
+
+#### 📚 **Development Logs**
+- **Feature implementations** - Document what was built and how
+- **Bug fixes** - Record issues encountered and solutions
+- **Refactoring** - Track code improvements and optimizations
+- **Architecture decisions** - Log technical choices and reasoning
+- **Milestones** - Mark significant project achievements
+- **File tracking** - Link log entries to specific changed files
+
+#### 🔄 **Live Session Coordination**
+- **Real-time updates** - All changes sync immediately across sessions
+- **Conflict prevention** - Avoid overlapping work on same files
+- **Context sharing** - Sessions inherit full project understanding
+- **Handoff seamless** - Perfect continuity between different AI agents
 
 ---
 
