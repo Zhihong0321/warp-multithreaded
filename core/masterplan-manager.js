@@ -714,6 +714,69 @@ ${recentLog.slice(0, 500)}...
     }
 
     /**
+     * Get recent session logs
+     */
+    getRecentSessions(limit = 5) {
+        try {
+            const logContent = fs.readFileSync(this.sessionLogFile, 'utf8');
+            const sessions = [];
+            
+            // Parse session entries from the log
+            const sessionBlocks = logContent.split('## Session #').slice(1); // Skip header
+            
+            sessionBlocks.slice(0, limit).forEach(block => {
+                const lines = block.split('\n');
+                const sessionHeader = lines[0] || '';
+                
+                // Extract basic info from session
+                const sessionInfo = {
+                    session_name: 'Development Session',
+                    timestamp: new Date().toISOString(),
+                    summary: 'No summary available'
+                };
+                
+                // Try to parse session details
+                lines.forEach(line => {
+                    if (line.includes('**Session**:')) {
+                        sessionInfo.session_name = line.split('**Session**:')[1]?.trim() || 'Unknown';
+                    }
+                    if (line.includes('**Time**:')) {
+                        const timeStr = line.split('**Time**:')[1]?.trim();
+                        if (timeStr) {
+                            sessionInfo.timestamp = new Date(timeStr).toISOString();
+                        }
+                    }
+                });
+                
+                // Extract summary from the session block
+                const summaryIndex = lines.findIndex(line => line.includes('### Summary'));
+                if (summaryIndex !== -1 && lines[summaryIndex + 1]) {
+                    sessionInfo.summary = lines[summaryIndex + 1].trim();
+                }
+                
+                // Extract next goals
+                const goalsIndex = lines.findIndex(line => line.includes('### Next Session Goals'));
+                if (goalsIndex !== -1) {
+                    const goalLines = [];
+                    for (let i = goalsIndex + 1; i < lines.length && !lines[i].startsWith('###') && !lines[i].startsWith('---'); i++) {
+                        if (lines[i].trim().startsWith('- 🎯')) {
+                            goalLines.push(lines[i].replace('- 🎯', '').trim());
+                        }
+                    }
+                    sessionInfo.next_goals = goalLines;
+                }
+                
+                sessions.push(sessionInfo);
+            });
+            
+            return sessions;
+        } catch (error) {
+            console.warn('Could not read recent sessions:', error.message);
+            return [];
+        }
+    }
+
+    /**
      * Get full masterplan status for dashboard
      */
     getStatus() {

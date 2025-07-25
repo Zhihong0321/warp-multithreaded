@@ -12,6 +12,10 @@ class WarpDashboard {
         this.projectInfo = {};
         this.currentTaskSession = null;
         this.activityLog = [];
+        this.masterplanData = {
+            project: {},
+            tasks: []
+        };
         
         this.init();
     }
@@ -349,6 +353,261 @@ class WarpDashboard {
     resetCreateSessionForm() {
         document.getElementById('create-session-form').reset();
     }
+
+    // Masterplan Management Methods
+    async loadMasterplanData() {
+        try {
+            const response = await fetch('/api/masterplan');
+            this.masterplanData = await response.json();
+            this.renderMasterplan();
+        } catch (error) {
+            console.error('Failed to load masterplan data:', error);
+            this.showToast('Failed to load masterplan data', 'error');
+        }
+    }
+
+    renderMasterplan() {
+        // Update goal display
+        this.renderProjectGoal();
+        
+        // Update project overview
+        const projectStatus = document.getElementById('project-status');
+        const projectPhase = document.getElementById('project-phase');
+        const projectProgress = document.getElementById('project-progress');
+
+        if (projectStatus) {
+            projectStatus.textContent = this.masterplanData.project.status || 'Active';
+        }
+        if (projectPhase) {
+            projectPhase.textContent = this.masterplanData.project.phase || 'Development';
+        }
+        if (projectProgress) {
+            const progress = this.masterplanData.project.progress || 0;
+            projectProgress.style.width = `${progress}%`;
+            projectProgress.setAttribute('data-progress', `${progress}%`);
+        }
+
+        // Render tasks
+        this.renderMasterplanTasks();
+        
+        // Render discussion history
+        this.renderDiscussionHistory();
+        
+        // Render development log
+        this.renderDevelopmentLog();
+    }
+
+    renderMasterplanTasks() {
+        const container = document.getElementById('masterplan-tasks');
+        
+        if (!this.masterplanData.tasks || this.masterplanData.tasks.length === 0) {
+            container.innerHTML = `
+                <div class="empty-tasks">
+                    <i class="fas fa-tasks"></i>
+                    <p>No masterplan tasks yet</p>
+                    <button class="btn btn-primary" onclick="showCreateTaskModal()">
+                        <i class="fas fa-plus"></i> Create First Task
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = this.masterplanData.tasks.map(task => this.renderTaskItem(task)).join('');
+    }
+
+    renderTaskItem(task) {
+        const priorityClass = `priority-${task.priority || 'medium'}`;
+        const statusClass = `status-${task.status || 'pending'}`;
+        
+        return `
+            <div class="task-item" data-task-id="${task.id}">
+                <div class="task-header">
+                    <h5 class="task-title">${task.title}</h5>
+                    <div class="task-actions">
+                        <button class="btn btn-small btn-secondary" onclick="dashboard.editMasterplanTask('${task.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-success" onclick="dashboard.completeMasterplanTask('${task.id}')">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="dashboard.deleteMasterplanTask('${task.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="task-meta">
+                    <div class="task-priority">
+                        <i class="fas fa-flag"></i>
+                        <span class="priority-badge ${priorityClass}">${task.priority || 'medium'}</span>
+                    </div>
+                    <div class="task-status">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="status-badge ${statusClass}">${task.status || 'pending'}</span>
+                    </div>
+                    ${task.category ? `
+                        <div class="task-category">
+                            <i class="fas fa-tag"></i>
+                            <span>${task.category}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${task.details ? `
+                    <div class="task-details">${task.details}</div>
+                ` : ''}
+                <div class="task-timestamps">
+                    <span>Created: ${new Date(task.created_at).toLocaleDateString()}</span>
+                    ${task.completed_at ? `<span>Completed: ${new Date(task.completed_at).toLocaleDateString()}</span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    async createMasterplanTask(taskData) {
+        try {
+            const response = await fetch('/api/masterplan/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                this.showToast('Task created successfully', 'success');
+                this.hideCreateTaskModal();
+                this.resetCreateTaskForm();
+                this.loadMasterplanData();
+            } else {
+                this.showToast(`Failed to create task: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('Failed to create task:', error);
+            this.showToast('Failed to create task', 'error');
+        }
+    }
+
+    async completeMasterplanTask(taskId) {
+        try {
+            const response = await fetch(`/api/masterplan/tasks/${taskId}/complete`, {
+                method: 'POST'
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                this.showToast('Task marked as completed', 'success');
+                this.loadMasterplanData();
+            } else {
+                this.showToast(`Failed to complete task: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('Failed to complete task:', error);
+            this.showToast('Failed to complete task', 'error');
+        }
+    }
+
+    async deleteMasterplanTask(taskId) {
+        if (!confirm('Are you sure you want to delete this task?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/masterplan/tasks/${taskId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                this.showToast('Task deleted successfully', 'success');
+                this.loadMasterplanData();
+            } else {
+                this.showToast(`Failed to delete task: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('Failed to delete task:', error);
+            this.showToast('Failed to delete task', 'error');
+        }
+    }
+
+    editMasterplanTask(taskId) {
+        const task = this.masterplanData.tasks.find(t => t.id === taskId);
+        if (!task) return;
+        
+        // Pre-fill the create task form with existing data for editing
+        document.getElementById('task-title').value = task.title;
+        document.getElementById('task-details').value = task.details || '';
+        document.getElementById('task-priority').value = task.priority || 'medium';
+        document.getElementById('task-category').value = task.category || '';
+        
+        // Change form submission to update instead of create
+        const form = document.getElementById('create-task-form');
+        form.onsubmit = (e) => this.updateMasterplanTask(e, taskId);
+        
+        // Change modal title and button text
+        document.querySelector('#create-task-modal .modal-header h3').innerHTML = '<i class="fas fa-edit"></i> Edit Task';
+        document.querySelector('#create-task-form button[type="submit"]').textContent = 'Update Task';
+        
+        this.showCreateTaskModal();
+    }
+
+    async updateMasterplanTask(event, taskId) {
+        event.preventDefault();
+        
+        const taskData = {
+            title: document.getElementById('task-title').value,
+            details: document.getElementById('task-details').value,
+            priority: document.getElementById('task-priority').value,
+            category: document.getElementById('task-category').value
+        };
+        
+        try {
+            const response = await fetch(`/api/masterplan/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                this.showToast('Task updated successfully', 'success');
+                this.hideCreateTaskModal();
+                this.resetCreateTaskForm();
+                this.loadMasterplanData();
+            } else {
+                this.showToast(`Failed to update task: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            console.error('Failed to update task:', error);
+            this.showToast('Failed to update task', 'error');
+        }
+    }
+
+    showMasterplanModal() {
+        this.loadMasterplanData();
+        document.getElementById('masterplan-modal').style.display = 'block';
+    }
+
+    hideMasterplanModal() {
+        document.getElementById('masterplan-modal').style.display = 'none';
+    }
+
+    showCreateTaskModal() {
+        document.getElementById('create-task-modal').style.display = 'block';
+    }
+
+    hideCreateTaskModal() {
+        document.getElementById('create-task-modal').style.display = 'none';
+        this.resetCreateTaskForm();
+    }
+
+    resetCreateTaskForm() {
+        const form = document.getElementById('create-task-form');
+        form.reset();
+        form.onsubmit = createMasterplanTask;
+        
+        // Reset modal title and button text
+        document.querySelector('#create-task-modal .modal-header h3').innerHTML = '<i class="fas fa-plus-circle"></i> Create New Task';
+        document.querySelector('#create-task-form button[type="submit"]').textContent = 'Create Task';
+    }
 }
 
 // Global Functions (called from HTML)
@@ -434,4 +693,34 @@ function hideProjectInfoModal() {
 
 function refreshConflicts() {
     checkConflicts();
+}
+
+// Masterplan Functions
+function showMasterplanModal() {
+    dashboard.showMasterplanModal();
+}
+
+function hideMasterplanModal() {
+    dashboard.hideMasterplanModal();
+}
+
+function showCreateTaskModal() {
+    dashboard.showCreateTaskModal();
+}
+
+function hideCreateTaskModal() {
+    dashboard.hideCreateTaskModal();
+}
+
+function createMasterplanTask(event) {
+    event.preventDefault();
+    
+    const taskData = {
+        title: document.getElementById('task-title').value,
+        details: document.getElementById('task-details').value,
+        priority: document.getElementById('task-priority').value,
+        category: document.getElementById('task-category').value
+    };
+    
+    dashboard.createMasterplanTask(taskData);
 }

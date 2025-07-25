@@ -236,7 +236,7 @@ class HealthChecker {
         
         // Test coordinator help
         try {
-            const helpOutput = execSync(`node "${coordinatorPath}" --help`, { 
+            const helpOutput = execSync(`node "${coordinatorPath}" help`, { 
                 encoding: 'utf8',
                 timeout: 10000 
             });

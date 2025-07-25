@@ -75,6 +75,9 @@
                         <button class="btn btn-info" onclick="showProjectInfo()">
                             <i class="fas fa-info-circle"></i> Project Info
                         </button>
+                        <button class="btn btn-success" onclick="showMasterplanModal()">
+                            <i class="fas fa-brain"></i> Masterplan
+                        </button>
                     </div>
                 </div>
             </section>
@@ -196,6 +199,218 @@
             <div id="project-info-content">
                 <!-- Project info will be populated here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Masterplan Modal -->
+    <div class="modal" id="masterplan-modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3><i class="fas fa-brain"></i> Masterplan Management</h3>
+                <button class="close-btn" onclick="hideMasterplanModal()">&times;</button>
+            </div>
+            <div class="masterplan-content">
+                <!-- Project Goal -->
+                <div class="masterplan-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-bullseye"></i> Project Goal & Vision</h4>
+                        <button class="btn btn-small btn-secondary" onclick="showEditGoalModal()">
+                            <i class="fas fa-edit"></i> Edit Goal
+                        </button>
+                    </div>
+                    <div class="goal-container" id="goal-container">
+                        <div class="goal-display" id="goal-display">
+                            <p id="goal-text">Loading project goal...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Overview -->
+                <div class="masterplan-section">
+                    <h4><i class="fas fa-chart-line"></i> Project Overview</h4>
+                    <div class="project-overview" id="project-overview">
+                        <div class="overview-item">
+                            <span class="label">Status:</span>
+                            <span class="value" id="project-status">Loading...</span>
+                        </div>
+                        <div class="overview-item">
+                            <span class="label">Phase:</span>
+                            <span class="value" id="project-phase">Loading...</span>
+                        </div>
+                        <div class="overview-item">
+                            <span class="label">Progress:</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="project-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Section -->
+                <div class="masterplan-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-tasks"></i> Masterplan Tasks</h4>
+                        <button class="btn btn-small btn-primary" onclick="showCreateTaskModal()">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
+                    <div class="tasks-container" id="masterplan-tasks">
+                        <!-- Tasks will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Discussion History Section -->
+                <div class="masterplan-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-comments"></i> Discussion History</h4>
+                        <button class="btn btn-small btn-primary" onclick="showAddDiscussionModal()">
+                            <i class="fas fa-plus"></i> Add Summary
+                        </button>
+                    </div>
+                    <div class="discussion-container" id="discussion-history">
+                        <!-- Discussion history will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Development Log Section -->
+                <div class="masterplan-section">
+                    <div class="section-header">
+                        <h4><i class="fas fa-code"></i> Development Log</h4>
+                        <button class="btn btn-small btn-primary" onclick="showAddLogModal()">
+                            <i class="fas fa-plus"></i> Add Entry
+                        </button>
+                    </div>
+                    <div class="development-log" id="development-log">
+                        <!-- Development log will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal" id="create-task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Create New Task</h3>
+                <button class="close-btn" onclick="hideCreateTaskModal()">&times;</button>
+            </div>
+            <form id="create-task-form" onsubmit="createMasterplanTask(event)">
+                <div class="form-group">
+                    <label for="task-title">Task Title</label>
+                    <input type="text" id="task-title" required placeholder="Brief description of the task">
+                </div>
+                <div class="form-group">
+                    <label for="task-details">Task Details</label>
+                    <textarea id="task-details" rows="4" placeholder="Detailed description of what needs to be done..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="task-priority">Priority</label>
+                    <select id="task-priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="task-category">Category</label>
+                    <input type="text" id="task-category" placeholder="e.g., frontend, backend, testing">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideCreateTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Goal Modal -->
+    <div class="modal" id="edit-goal-modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3><i class="fas fa-bullseye"></i> Edit Project Goal & Vision</h3>
+                <button class="close-btn" onclick="hideEditGoalModal()">&times;</button>
+            </div>
+            <form id="edit-goal-form" onsubmit="updateProjectGoal(event)">
+                <div class="form-group">
+                    <label for="goal-text-edit">Project Goal & Vision</label>
+                    <textarea id="goal-text-edit" rows="8" placeholder="Describe the overall goal, vision, and final outcome you want to achieve with this project. This will serve as the guiding compass for all AI agents throughout the development process..."></textarea>
+                    <small class="form-help">💡 This goal will be referenced by AI agents to maintain focus and direction throughout long development sessions.</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideEditGoalModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Discussion Modal -->
+    <div class="modal" id="add-discussion-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-comments"></i> Add Discussion Summary</h3>
+                <button class="close-btn" onclick="hideAddDiscussionModal()">&times;</button>
+            </div>
+            <form id="add-discussion-form" onsubmit="addDiscussionEntry(event)">
+                <div class="form-group">
+                    <label for="discussion-title">Discussion Title</label>
+                    <input type="text" id="discussion-title" required placeholder="Brief title for this discussion">
+                </div>
+                <div class="form-group">
+                    <label for="discussion-summary">Discussion Summary</label>
+                    <textarea id="discussion-summary" rows="5" required placeholder="Summarize key decisions, changes in direction, important insights, or strategic discussions that impact the project..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="discussion-tags">Tags (comma-separated)</label>
+                    <input type="text" id="discussion-tags" placeholder="e.g., architecture, ui-change, scope-adjustment">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddDiscussionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Summary</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Development Log Modal -->
+    <div class="modal" id="add-log-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-code"></i> Add Development Log Entry</h3>
+                <button class="close-btn" onclick="hideAddLogModal()">&times;</button>
+            </div>
+            <form id="add-log-form" onsubmit="addLogEntry(event)">
+                <div class="form-group">
+                    <label for="log-title">Log Entry Title</label>
+                    <input type="text" id="log-title" required placeholder="What was accomplished or worked on?">
+                </div>
+                <div class="form-group">
+                    <label for="log-description">Description</label>
+                    <textarea id="log-description" rows="4" required placeholder="Describe what was implemented, issues encountered, decisions made, or progress achieved..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="log-type">Entry Type</label>
+                    <select id="log-type">
+                        <option value="feature">Feature Implementation</option>
+                        <option value="bugfix">Bug Fix</option>
+                        <option value="refactor">Refactoring</option>
+                        <option value="research">Research/Investigation</option>
+                        <option value="architecture">Architecture Decision</option>
+                        <option value="milestone">Milestone</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="log-files">Related Files (comma-separated)</label>
+                    <input type="text" id="log-files" placeholder="e.g., src/components/Button.tsx, styles/main.css">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddLogModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Entry</button>
+                </div>
+            </form>
         </div>
     </div>
 

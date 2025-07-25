@@ -158,6 +158,110 @@ class DashboardServer {
                 res.status(500).json({ error: error.message });
             }
         });
+
+        // Masterplan API Routes
+        this.app.get('/api/masterplan', (req, res) => {
+            try {
+                const masterplanData = this.getMasterplanData();
+                res.json(masterplanData);
+            } catch (error) {
+                res.status(500).json({ error: error.message });
+            }
+        });
+
+        this.app.post('/api/masterplan/tasks', (req, res) => {
+            try {
+                const { title, details, priority, category } = req.body;
+                const task = this.createMasterplanTask({ title, details, priority, category });
+                res.json({ success: true, task });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        this.app.put('/api/masterplan/tasks/:id', (req, res) => {
+            try {
+                const { id } = req.params;
+                const { title, details, priority, category } = req.body;
+                const task = this.updateMasterplanTask(id, { title, details, priority, category });
+                res.json({ success: true, task });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        this.app.post('/api/masterplan/tasks/:id/complete', (req, res) => {
+            try {
+                const { id } = req.params;
+                const task = this.completeMasterplanTask(id);
+                res.json({ success: true, task });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        this.app.delete('/api/masterplan/tasks/:id', (req, res) => {
+            try {
+                const { id } = req.params;
+                this.deleteMasterplanTask(id);
+                res.json({ success: true });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        // Goal management routes
+        this.app.put('/api/masterplan/goal', (req, res) => {
+            try {
+                const { text } = req.body;
+                const goal = this.updateProjectGoal(text);
+                res.json({ success: true, goal });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        // Discussion history routes
+        this.app.post('/api/masterplan/discussions', (req, res) => {
+            try {
+                const { title, summary, tags } = req.body;
+                const discussion = this.addDiscussion({ title, summary, tags });
+                res.json({ success: true, discussion });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        this.app.delete('/api/masterplan/discussions/:id', (req, res) => {
+            try {
+                const { id } = req.params;
+                this.deleteDiscussion(id);
+                res.json({ success: true });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        // Development log routes
+        this.app.post('/api/masterplan/logs', (req, res) => {
+            try {
+                const { title, description, type, files } = req.body;
+                const logEntry = this.addLogEntry({ title, description, type, files });
+                res.json({ success: true, logEntry });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        this.app.delete('/api/masterplan/logs/:id', (req, res) => {
+            try {
+                const { id } = req.params;
+                this.deleteLogEntry(id);
+                res.json({ success: true });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
     }
 
     setupSocketHandlers() {
@@ -241,6 +345,245 @@ class DashboardServer {
 
     stop() {
         this.server.close();
+    }
+
+    // Masterplan Management Methods
+    getMasterplanPath() {
+        return path.join(this.projectRoot, '.warp-masterplan.json');
+    }
+
+    getMasterplanData() {
+        const masterplanPath = this.getMasterplanPath();
+        
+        if (!fs.existsSync(masterplanPath)) {
+            // Create default masterplan data
+            const defaultData = {
+                goal: {
+                    text: "Define your project's main goal and vision here. This will serve as the guiding compass for all AI agents throughout the development process.",
+                    updated_at: new Date().toISOString()
+                },
+                project: {
+                    status: 'Active',
+                    phase: 'Development',
+                    progress: 0
+                },
+                tasks: [],
+                discussions: [],
+                developmentLog: []
+            };
+            this.saveMasterplanData(defaultData);
+            return defaultData;
+        }
+        
+        try {
+            return JSON.parse(fs.readFileSync(masterplanPath, 'utf8'));
+        } catch (error) {
+            console.error('Error reading masterplan data:', error);
+            return {
+                project: {
+                    status: 'Active',
+                    phase: 'Development', 
+                    progress: 0
+                },
+                tasks: []
+            };
+        }
+    }
+
+    saveMasterplanData(data) {
+        const masterplanPath = this.getMasterplanPath();
+        try {
+            fs.writeFileSync(masterplanPath, JSON.stringify(data, null, 2));
+        } catch (error) {
+            console.error('Error saving masterplan data:', error);
+            throw new Error('Failed to save masterplan data');
+        }
+    }
+
+    generateTaskId() {
+        return 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    createMasterplanTask(taskData) {
+        const masterplanData = this.getMasterplanData();
+        
+        const newTask = {
+            id: this.generateTaskId(),
+            title: taskData.title,
+            details: taskData.details || '',
+            priority: taskData.priority || 'medium',
+            category: taskData.category || '',
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            completed_at: null
+        };
+        
+        masterplanData.tasks.push(newTask);
+        this.saveMasterplanData(masterplanData);
+        
+        return newTask;
+    }
+
+    updateMasterplanTask(taskId, updates) {
+        const masterplanData = this.getMasterplanData();
+        const taskIndex = masterplanData.tasks.findIndex(task => task.id === taskId);
+        
+        if (taskIndex === -1) {
+            throw new Error('Task not found');
+        }
+        
+        const task = masterplanData.tasks[taskIndex];
+        Object.assign(task, updates);
+        task.updated_at = new Date().toISOString();
+        
+        this.saveMasterplanData(masterplanData);
+        
+        return task;
+    }
+
+    completeMasterplanTask(taskId) {
+        const masterplanData = this.getMasterplanData();
+        const taskIndex = masterplanData.tasks.findIndex(task => task.id === taskId);
+        
+        if (taskIndex === -1) {
+            throw new Error('Task not found');
+        }
+        
+        const task = masterplanData.tasks[taskIndex];
+        task.status = 'completed';
+        task.completed_at = new Date().toISOString();
+        
+        // Update project progress based on completed tasks
+        const totalTasks = masterplanData.tasks.length;
+        const completedTasks = masterplanData.tasks.filter(t => t.status === 'completed').length;
+        masterplanData.project.progress = Math.round((completedTasks / totalTasks) * 100);
+        
+        this.saveMasterplanData(masterplanData);
+        
+        return task;
+    }
+
+    deleteMasterplanTask(taskId) {
+        const masterplanData = this.getMasterplanData();
+        const taskIndex = masterplanData.tasks.findIndex(task => task.id === taskId);
+        
+        if (taskIndex === -1) {
+            throw new Error('Task not found');
+        }
+        
+        masterplanData.tasks.splice(taskIndex, 1);
+        
+        // Update project progress after deletion
+        if (masterplanData.tasks.length > 0) {
+            const totalTasks = masterplanData.tasks.length;
+            const completedTasks = masterplanData.tasks.filter(t => t.status === 'completed').length;
+            masterplanData.project.progress = Math.round((completedTasks / totalTasks) * 100);
+        } else {
+            masterplanData.project.progress = 0;
+        }
+        
+        this.saveMasterplanData(masterplanData);
+    }
+
+    // Goal Management Methods
+    updateProjectGoal(text) {
+        const masterplanData = this.getMasterplanData();
+        
+        masterplanData.goal = {
+            text: text,
+            updated_at: new Date().toISOString()
+        };
+        
+        this.saveMasterplanData(masterplanData);
+        
+        return masterplanData.goal;
+    }
+
+    // Discussion History Methods
+    generateDiscussionId() {
+        return 'disc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    addDiscussion(discussionData) {
+        const masterplanData = this.getMasterplanData();
+        
+        if (!masterplanData.discussions) {
+            masterplanData.discussions = [];
+        }
+        
+        const newDiscussion = {
+            id: this.generateDiscussionId(),
+            title: discussionData.title,
+            summary: discussionData.summary,
+            tags: discussionData.tags ? discussionData.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+            created_at: new Date().toISOString()
+        };
+        
+        masterplanData.discussions.unshift(newDiscussion); // Add to beginning
+        this.saveMasterplanData(masterplanData);
+        
+        return newDiscussion;
+    }
+
+    deleteDiscussion(discussionId) {
+        const masterplanData = this.getMasterplanData();
+        
+        if (!masterplanData.discussions) {
+            throw new Error('Discussion not found');
+        }
+        
+        const discussionIndex = masterplanData.discussions.findIndex(disc => disc.id === discussionId);
+        
+        if (discussionIndex === -1) {
+            throw new Error('Discussion not found');
+        }
+        
+        masterplanData.discussions.splice(discussionIndex, 1);
+        this.saveMasterplanData(masterplanData);
+    }
+
+    // Development Log Methods
+    generateLogId() {
+        return 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    addLogEntry(logData) {
+        const masterplanData = this.getMasterplanData();
+        
+        if (!masterplanData.developmentLog) {
+            masterplanData.developmentLog = [];
+        }
+        
+        const newLogEntry = {
+            id: this.generateLogId(),
+            title: logData.title,
+            description: logData.description,
+            type: logData.type || 'other',
+            files: logData.files ? logData.files.split(',').map(file => file.trim()).filter(file => file) : [],
+            created_at: new Date().toISOString()
+        };
+        
+        masterplanData.developmentLog.unshift(newLogEntry); // Add to beginning
+        this.saveMasterplanData(masterplanData);
+        
+        return newLogEntry;
+    }
+
+    deleteLogEntry(logId) {
+        const masterplanData = this.getMasterplanData();
+        
+        if (!masterplanData.developmentLog) {
+            throw new Error('Log entry not found');
+        }
+        
+        const logIndex = masterplanData.developmentLog.findIndex(log => log.id === logId);
+        
+        if (logIndex === -1) {
+            throw new Error('Log entry not found');
+        }
+        
+        masterplanData.developmentLog.splice(logIndex, 1);
+        this.saveMasterplanData(masterplanData);
     }
 }
 
