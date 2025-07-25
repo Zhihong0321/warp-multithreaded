@@ -164,9 +164,23 @@ node /path/to/warp-multithreaded/scripts/coordinator.js status
 
 3. **Create working session:**
 ```bash
+# Create a custom session for today's work
 node /path/to/warp-multithreaded/scripts/coordinator.js session create \
   --name=todays-work \
   --focus=authentication,validation
+
+# Or create multiple focused sessions:
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=frontend \
+  --focus=ui,components,styling \
+  --directories=src/components,src/styles \
+  --patterns=*.tsx,*.jsx,*.css
+
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=backend \
+  --focus=api,database,auth \
+  --directories=src/api,src/models \
+  --patterns=*.js,*.ts,*.sql
 ```
 
 4. **Share context with your AI assistant:**
@@ -209,6 +223,121 @@ node /path/to/warp-multithreaded/scripts/coordinator.js shutdown \
   --outcomes="login/logout working,JWT implementation,password validation" \
   --next-goals="finish user profile form,add email verification,implement password reset"
 ```
+
+---
+
+## 🎯 Custom Session Creation Guide
+
+### ✅ **Yes! Create Any Session Name You Want**
+
+You have complete freedom to create sessions with any name that makes sense for your workflow:
+
+```bash
+# Basic session creation
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=your-session-name
+
+# Examples of custom session names:
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=authentication-work
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=ui-redesign
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=database-optimization
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=bug-hunting
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=feature-xyz
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=refactoring-legacy
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=mobile-responsive
+```
+
+### 🛠️ **Advanced Session Options**
+
+Customize sessions with specific focus areas, directories, and file patterns:
+
+```bash
+# Create a focused authentication session
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=auth-system \
+  --focus=authentication,security,validation \
+  --directories=src/auth,src/middleware,src/security \
+  --patterns=*.js,*.ts,*.json
+
+# Create a UI/UX focused session
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=ui-components \
+  --focus=components,styling,responsive \
+  --directories=src/components,src/styles,public \
+  --patterns=*.tsx,*.jsx,*.css,*.scss,*.html
+
+# Create a data/API session
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=data-layer \
+  --focus=database,api,models \
+  --directories=src/models,src/api,migrations \
+  --patterns=*.sql,*.js,*.ts,*.json
+
+# Create a testing session
+node /path/to/warp-multithreaded/scripts/coordinator.js session create \
+  --name=quality-assurance \
+  --focus=testing,e2e,unit-tests \
+  --directories=tests,cypress,__tests__ \
+  --patterns=*.test.js,*.spec.js,*.cy.js
+```
+
+### 📋 **Session Management Commands**
+
+```bash
+# List all your active sessions
+node /path/to/warp-multithreaded/scripts/coordinator.js session list
+
+# Get detailed info about a specific session
+node /path/to/warp-multithreaded/scripts/coordinator.js session info --name=your-session-name
+
+# Close a session when you're done
+node /path/to/warp-multithreaded/scripts/coordinator.js session close --name=your-session-name
+
+# Check overall framework status
+node /path/to/warp-multithreaded/scripts/coordinator.js status
+```
+
+### 🎨 **Dashboard Session Creation**
+
+You can also create sessions through the web interface:
+
+1. Launch dashboard: `node /path/to/warp-multithreaded/scripts/coordinator.js dashboard`
+2. Open `http://localhost:3000`
+3. Click **"Create Session"** button
+4. Enter your custom session name and options
+5. Session appears immediately with real-time updates
+
+### 💡 **Session Naming Best Practices**
+
+- ✅ **Use descriptive names**: `frontend-redesign` instead of `session1`
+- ✅ **Include focus area**: `auth-security`, `ui-components`, `api-endpoints`
+- ✅ **Use hyphens or underscores**: `mobile-responsive` or `mobile_responsive`
+- ✅ **Keep it under 50 characters**: Session names are limited to 50 chars
+- ✅ **Avoid special characters**: Stick to letters, numbers, hyphens, underscores
+
+### 🚫 **What NOT to use in session names**:
+- ❌ `< > : " / \ | ? *` (filesystem-unsafe characters)
+- ❌ Empty names or just spaces
+- ❌ Very long names (over 50 characters)
+
+### 🎯 **Working with Multiple Named Sessions**
+
+Create multiple sessions for parallel development:
+
+```bash
+# Terminal 1: Frontend work
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=frontend-sprint
+# Then: "I'm working in session 'frontend-sprint' on UI components"
+
+# Terminal 2: Backend work (different terminal window)
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=backend-api
+# Then: "I'm working in session 'backend-api' on REST endpoints"
+
+# Terminal 3: Testing (another terminal window)
+node /path/to/warp-multithreaded/scripts/coordinator.js session create --name=test-automation
+# Then: "I'm working in session 'test-automation' on automated tests"
+```
+
+Each session will coordinate automatically and prevent file conflicts! 🎉
 
 ---
 
