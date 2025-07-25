@@ -1,0 +1,151 @@
+[
+  {
+    "id": "goal_1753426767276",
+    "oldGoal": "Build a social media dashboard that helps influencers manage multiple platforms efficiently.",
+    "newGoal": "Develop a productivity app that uses machine learning to optimize daily schedules.",
+    "source": "demo",
+    "timestamp": "2025-07-25T06:59:27.276Z",
+    "metadata": {
+      "updatedBy": "Demo script",
+      "reason": "Demo goal update 3",
+      "demoStep": 3
+    },
+    "changes": {
+      "lengthChange": -10,
+      "wordChange": 0,
+      "addedWords": [
+        "develop",
+        "productivity",
+        "app",
+        "uses",
+        "machine",
+        "learning",
+        "to",
+        "optimize",
+        "daily",
+        "schedules."
+      ],
+      "removedWords": [
+        "build",
+        "social",
+        "media",
+        "dashboard",
+        "helps",
+        "influencers",
+        "manage",
+        "multiple",
+        "platforms",
+        "efficiently."
+      ],
+      "similarity": 0.2391304347826087
+    }
+  },
+  {
+    "id": "goal_1753426766258",
+    "oldGoal": "Create an innovative e-commerce platform with AI-powered recommendations.",
+    "newGoal": "Build a social media dashboard that helps influencers manage multiple platforms efficiently.",
+    "source": "demo",
+    "timestamp": "2025-07-25T06:59:26.257Z",
+    "metadata": {
+      "updatedBy": "Demo script",
+      "reason": "Demo goal update 2",
+      "demoStep": 2
+    },
+    "changes": {
+      "lengthChange": 19,
+      "wordChange": 4,
+      "addedWords": [
+        "build",
+        "a",
+        "social",
+        "media",
+        "dashboard",
+        "that",
+        "helps",
+        "influencers",
+        "manage",
+        "multiple"
+      ],
+      "removedWords": [
+        "create",
+        "an",
+        "innovative",
+        "e-commerce",
+        "platform",
+        "with",
+        "ai-powered",
+        "recommendations."
+      ],
+      "similarity": 0.18478260869565216
+    }
+  },
+  {
+    "id": "goal_1753426765248",
+    "oldGoal": "Build a revolutionary AI-powered project management platform that helps teams collaborate seamlessly and increase productivity by 300%.",
+    "newGoal": "Create an innovative e-commerce platform with AI-powered recommendations.",
+    "source": "demo",
+    "timestamp": "2025-07-25T06:59:25.247Z",
+    "metadata": {
+      "updatedBy": "Demo script",
+      "reason": "Demo goal update 1",
+      "demoStep": 1
+    },
+    "changes": {
+      "lengthChange": -62,
+      "wordChange": -9,
+      "addedWords": [
+        "create",
+        "an",
+        "innovative",
+        "e-commerce",
+        "with",
+        "recommendations."
+      ],
+      "removedWords": [
+        "build",
+        "a",
+        "revolutionary",
+        "project",
+        "management",
+        "that",
+        "helps",
+        "teams",
+        "collaborate",
+        "seamlessly"
+      ],
+      "similarity": 0.25925925925925924
+    }
+  },
+  {
+    "id": "goal_1753426301435",
+    "oldGoal": "A testing Project Goal.",
+    "newGoal": "Build a revolutionary AI-powered project management platform that helps teams collaborate seamlessly and increase productivity by 300%.",
+    "source": "cli",
+    "timestamp": "2025-07-25T06:51:41.434Z",
+    "metadata": {
+      "updatedBy": "CLI user",
+      "reason": "Manual goal update via CLI"
+    },
+    "changes": {
+      "lengthChange": 112,
+      "wordChange": 13,
+      "addedWords": [
+        "build",
+        "revolutionary",
+        "ai-powered",
+        "management",
+        "platform",
+        "that",
+        "helps",
+        "teams",
+        "collaborate",
+        "seamlessly"
+      ],
+      "removedWords": [
+        "testing",
+        "goal."
+      ],
+      "similarity": 0.1259259259259259
+    }
+  }
+]

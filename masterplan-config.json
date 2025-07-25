@@ -1,0 +1,14 @@
+{
+  "goal": "Develop a productivity app that uses machine learning to optimize daily schedules.",
+  "techStack": "ai_decide",
+  "hosting": "railway",
+  "database": "postgresql",
+  "authentication": "clerk",
+  "performance": {
+    "targetResponseTime": "200ms",
+    "expectedUsers": "100"
+  },
+  "timeline": "4 weeks",
+  "createdAt": "2025-07-25T06:38:54.487Z",
+  "lastGoalUpdate": "2025-07-25T06:59:27.276Z"
+}

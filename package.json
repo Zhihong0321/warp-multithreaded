@@ -1,6 +1,6 @@
 {
   "name": "warp-multithreaded",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Enable multithreaded AI agent development with coordinated parallel sessions in Warp Terminal",
   "main": "core/session-manager.js",
   "bin": {
@@ -16,6 +16,9 @@
     "status": "node scripts/coordinator.js status",
     "demo": "node examples/demo.js",
     "dashboard": "node dashboard/server.js",
+    "cli-service": "node scripts/dashboard-cli-service.js",
+    "masterplan": "node scripts/generate-unified-rules.js",
+    "goal": "node scripts/goal-manager.js",
     "setup:windows": "powershell -ExecutionPolicy Bypass -File scripts/setup-windows.ps1",
     "setup:unix": "bash scripts/setup-unix.sh",
     "rules:check": "node scripts/rules-checker.js --status",
@@ -40,10 +43,11 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.26.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "socket.io": "^4.7.4"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/warp-multithreaded.git"

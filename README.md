@@ -1,14 +1,31 @@
 # Warp Multithreaded
 
-Enable multithreaded AI agent development with coordinated parallel sessions in Warp Terminal.
+A comprehensive framework for **high-performance, spec-driven AI development** with coordinated parallel sessions, dynamic goal management, and automated project setup.
 
-## 🚀 Features
+## 🚀 Core Features
 
-- **Multithreaded AI Development**: Run multiple AI agent sessions simultaneously
-- **Intelligent Coordination**: Prevent conflicts when agents work on the same project
-- **Function-Based Task Distribution**: Organize work by features/functions rather than files
+### 🤖 **Fully Automated Session Management**
+- **Auto-Session Creation**: System automatically detects work type and creates appropriate sessions
+- **Intelligent Coordination**: Prevent conflicts when multiple AI agents work simultaneously  
 - **Real-Time Session Awareness**: Each agent knows what others are working on
-- **Performance Optimization**: 2-4x faster development through parallel processing
+- **Performance Optimization**: 3-4x faster development through parallel AI work
+
+### 🎯 **Dynamic Goal Management** (NEW)
+- **Real-Time Goal Updates**: Edit project goals via dashboard or CLI with instant rule synchronization
+- **Comprehensive History Tracking**: Complete audit trail with similarity analysis and change impact
+- **Automatic Rule Regeneration**: Unified rules update automatically when goals change
+- **Quality Validation**: Built-in goal validation with length, format, and content checks
+
+### 🌐 **Dashboard CLI Integration** (NEW)
+- **Pure Magic Setup**: Dashboard can install CLI tools and run commands automatically
+- **Real-Time Terminal Streaming**: Live command output in web interface
+- **One-Click Project Setup**: Complete project initialization from web dashboard
+- **Tool Management**: Automatic detection and installation of development tools
+
+### 📋 **Masterplan-Driven Development**
+- **Spec-Driven Architecture**: AI agents work from comprehensive project specifications
+- **Auto-Rule Generation**: Single unified rule file instead of multiple separate rules
+- **Context Persistence**: Complete project memory across all AI sessions
 
 ## 🎯 Use Cases
 
@@ -61,34 +78,58 @@ I need to work on user authentication for my web app.
 ### 1. Install the Framework
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/warp-agent-framework.git
-cd warp-agent-framework
+git clone https://github.com/Zhihong0321/warp-multithreaded.git
+cd warp-multithreaded
 
-# Run setup
-./scripts/setup.ps1  # Windows
-# or
-./scripts/setup.sh   # Unix/Mac
+# Install dependencies
+npm install
+
+# Verify installation
+npm run health-check
 ```
 
-### 2. Initialize Your Project
+### 2. Create Your Masterplan (NEW)
 ```bash
-# Initialize coordination in your project
-node scripts/coordinator.js init --project-type=web-app
+# Option A: Use the dashboard (recommended)
+npm run cli-service
+# Then open http://localhost:3001 in your browser
 
-# Start a session
-node scripts/coordinator.js session create --name=frontend --focus=ui,components
+# Option B: Use CLI to generate unified rules
+npm run masterplan
+
+# Option C: Manage goals directly
+npm run goal get
+npm run goal set "Build an amazing AI-powered application"
 ```
 
-### 3. Work with Multiple Sessions
+### 3. Start Development with Auto-Sessions
 ```bash
-# Session 1: Frontend work
-warp-agent session --name=frontend
+# The system automatically creates sessions based on your work:
+# Just describe what you want to build - no manual session creation needed!
 
-# Session 2: Backend work (in another terminal)
-warp-agent session --name=backend
+# Example: Frontend work triggers auto-frontend session
+# "Create a login component with validation"
 
-# Session 3: Testing (in another terminal)
-warp-agent session --name=testing
+# Example: Backend work triggers auto-backend session  
+# "Build authentication API endpoints"
+
+# Example: Full-stack work automatically switches between sessions
+# "Add user profile functionality with frontend and backend"
+```
+
+### 4. Advanced Features
+```bash
+# Goal Management
+npm run goal history          # View goal change history
+npm run goal stats           # Goal statistics and analytics
+npm run goal validate "text" # Validate goal content
+
+# CLI Service (Magic Dashboard)
+npm run cli-service          # Start dashboard with CLI integration
+
+# System Management
+npm run status               # Check coordination status
+npm run validate             # Validate system health
 ```
 
 ## 🏗️ Architecture
