@@ -13,10 +13,15 @@ class WarpRulesChecker {
     constructor() {
         this.frameworkRoot = path.resolve(__dirname, '..');
         this.rulesDir = path.join(this.frameworkRoot, 'warp-rules');
+        this.unifiedRulePath = path.join(this.frameworkRoot, '.warp-unified-rules.md');
+        // NEW: Using unified rule system instead of multiple rules
         this.requiredRules = [
+            '.warp-unified-rules.md'  // Single unified rule file
+        ];
+        // Legacy rules for backward compatibility check
+        this.legacyRules = [
             'enhanced-multi-session-coordination.md',
             'enhanced-masterplan-session-rules.md',
-            'enhanced-auto-session-coordination.md',
             'frontend-session-rules.md',
             'backend-session-rules.md'
         ];
@@ -56,12 +61,18 @@ class WarpRulesChecker {
      * Validate that all required rule files exist
      */
     checkRulesAvailable() {
+        // Check for unified rule file
+        if (fs.existsSync(this.unifiedRulePath)) {
+            return true;
+        }
+        
+        // Fallback: Check for legacy rules in warp-rules directory
         if (!fs.existsSync(this.rulesDir)) {
             return false;
         }
 
         const missingRules = [];
-        for (const rule of this.requiredRules) {
+        for (const rule of this.legacyRules) {
             const rulePath = path.join(this.rulesDir, rule);
             if (!fs.existsSync(rulePath)) {
                 missingRules.push(rule);
@@ -83,14 +94,96 @@ class WarpRulesChecker {
      * Generate step-by-step instructions for adding rules to Warp
      */
     generateSetupInstructions() {
-        const instructions = `
+        const hasUnifiedRule = fs.existsSync(this.unifiedRulePath);
+        
+        if (hasUnifiedRule) {
+            // NEW: Unified rule setup (simpler!)
+            const instructions = `
 # 🚀 CRITICAL: Warp Rules Setup Required
 
 ## ⚠️ SETUP STATUS
 ${this.isWarpTerminal() ? '✅ Warp Terminal detected' : '❌ Not running in Warp Terminal'}
 ${this.checkRulesAvailable() ? '✅ Rule files available' : '❌ Rule files missing'}
 
-## 📋 MANDATORY SETUP STEPS
+## 📋 SIMPLIFIED SETUP - ONLY 1 RULE NEEDED! 🎉
+
+### Step 1: Add Rules to Your Warp IDE
+
+You MUST manually add this ONE unified rule to your Warp IDE:
+
+1. **Open Warp IDE Settings**
+   - Click the ⚙️ settings icon in Warp
+   - Navigate to "Rules" section
+
+2. **Add the Unified Rule (Copy & Paste)**
+
+   **WARP MULTITHREADED UNIFIED RULE**
+   \`\`\`
+   Copy content from: ${this.unifiedRulePath}
+   \`\`\`
+   
+   📝 **This single rule replaces all previous multiple rules!**
+   ✅ No need for frontend-session-rules.md
+   ✅ No need for backend-session-rules.md  
+   ✅ No need for enhanced-multi-session-coordination.md
+   ✅ Everything is unified in one file!
+
+### Step 2: Verify Rules Are Active
+
+After adding the rule, test in a new Warp session:
+
+\`\`\`
+Use the warp-multithreaded-unified-development-rules from my Warp Drive.
+I need to work on my project - show me the current status.
+\`\`\`
+
+If AI responds with session-aware behavior and mentions checking the project goal, rules are working! ✅
+
+### Step 3: Test Project Goal Integration
+
+The unified rule will automatically:
+- Check your project goal from masterplan-goal.md
+- Create appropriate sessions automatically
+- Coordinate between frontend/backend work
+- Prevent conflicts and manage state
+
+## 🔧 AUTOMATION COMMANDS
+
+Run this after manual setup:
+\`\`\`powershell
+# Verify setup
+node "${path.join(__dirname, 'rules-checker.js')}" --verify
+
+# Initialize project with unified rules
+node "${path.join(__dirname, 'coordinator.js')}" init --project-type=web-app
+\`\`\`
+
+## ❌ TROUBLESHOOTING
+
+**Rules not working in new sessions?**
+- Rule must be added to Warp IDE settings, not just mentioned in chat
+- Use exact phrase: "Use the warp-multithreaded-unified-development-rules"
+- Verify rule name matches exactly in Warp settings
+
+**Framework not coordinating?**
+- Check: \`node scripts/coordinator.js status\`
+- Ensure project is initialized: \`node scripts/coordinator.js init\`
+- Verify project goal exists: \`masterplan-goal.md\`
+
+---
+⚠️ **THE FRAMEWORK WILL NOT WORK WITHOUT THIS RULE IN WARP IDE** ⚠️
+`;
+            return instructions;
+        } else {
+            // Fallback to legacy setup
+            const instructions = `
+# 🚀 CRITICAL: Warp Rules Setup Required (Legacy Setup)
+
+## ⚠️ SETUP STATUS
+${this.isWarpTerminal() ? '✅ Warp Terminal detected' : '❌ Not running in Warp Terminal'}
+${this.checkRulesAvailable() ? '✅ Rule files available' : '❌ Rule files missing'}
+
+## 📋 LEGACY SETUP - MULTIPLE RULES
 
 ### Step 1: Add Rules to Your Warp IDE
 
@@ -133,38 +226,11 @@ Show me the current project status and available sessions.
 
 If AI responds with session-aware behavior, rules are working! ✅
 
-### Step 3: Test Multi-Session Coordination
-
-Create a new session in the same project folder and verify rules are loaded.
-
-## 🔧 AUTOMATION COMMANDS
-
-Run this after manual setup:
-\`\`\`powershell
-# Verify setup
-node "${path.join(__dirname, 'rules-checker.js')}" --verify
-
-# Initialize project with rules verification
-node "${path.join(__dirname, 'coordinator.js')}" init --verify-rules
-\`\`\`
-
-## ❌ TROUBLESHOOTING
-
-**Rules not working in new sessions?**
-- Rules must be added to Warp IDE settings, not just mentioned in chat
-- Each new session needs to activate rules manually
-- Verify rule names match exactly in Warp settings
-
-**Framework not coordinating?**
-- Check: \`node scripts/coordinator.js status\`
-- Ensure project is initialized: \`node scripts/coordinator.js init\`
-- Verify session files exist in \`.warp-sessions/\`
-
 ---
 ⚠️ **THE FRAMEWORK WILL NOT WORK WITHOUT THESE RULES IN WARP IDE** ⚠️
 `;
-
-        return instructions;
+            return instructions;
+        }
     }
 
     /**
@@ -197,7 +263,14 @@ node "${path.join(__dirname, 'coordinator.js')}" init --verify-rules
         console.log('='.repeat(60));
         console.log('\n1. Open the generated file: WARP_RULES_SETUP_REQUIRED.md');
         console.log('2. Follow the step-by-step instructions');
-        console.log('3. Add all 4 rules to your Warp IDE settings');
+        
+        if (fs.existsSync(this.unifiedRulePath)) {
+            console.log('3. 🎉 SIMPLIFIED: Add ONLY 1 unified rule to Warp IDE!');
+            console.log('   ✅ Much easier than the old 4-rule setup');
+        } else {
+            console.log('3. Add all 4 legacy rules to your Warp IDE settings');
+        }
+        
         console.log('4. Test in a new Warp session');
         console.log('\n⚠️  The framework CANNOT work without these rules!\n');
 
@@ -236,18 +309,27 @@ node "${path.join(__dirname, 'coordinator.js')}" init --verify-rules
     displayRuleFiles() {
         console.log('📋 Available Rule Files for Manual Setup:\n');
         
-        this.requiredRules.forEach((ruleFile, index) => {
-            const rulePath = path.join(this.rulesDir, ruleFile);
-            if (fs.existsSync(rulePath)) {
-                console.log(`${index + 1}. ${ruleFile}`);
-                console.log(`   Path: ${rulePath}`);
-                console.log(`   Size: ${fs.statSync(rulePath).size} bytes`);
-            } else {
-                console.log(`${index + 1}. ${ruleFile} - ❌ MISSING`);
-            }
-        });
-
-        console.log('\n💡 Use these files to copy content into Warp IDE Rules section');
+        if (fs.existsSync(this.unifiedRulePath)) {
+            console.log('🎉 UNIFIED RULE SYSTEM DETECTED!');
+            console.log(`1. .warp-unified-rules.md`);
+            console.log(`   Path: ${this.unifiedRulePath}`);
+            console.log(`   Size: ${fs.statSync(this.unifiedRulePath).size} bytes`);
+            console.log('\n✨ ONLY ONE RULE FILE NEEDED - Much simpler!');
+            console.log('💡 Copy content from this file into Warp IDE Rules section');
+        } else {
+            console.log('📝 LEGACY RULE SYSTEM:');
+            this.legacyRules.forEach((ruleFile, index) => {
+                const rulePath = path.join(this.rulesDir, ruleFile);
+                if (fs.existsSync(rulePath)) {
+                    console.log(`${index + 1}. ${ruleFile}`);
+                    console.log(`   Path: ${rulePath}`);
+                    console.log(`   Size: ${fs.statSync(rulePath).size} bytes`);
+                } else {
+                    console.log(`${index + 1}. ${ruleFile} - ❌ MISSING`);
+                }
+            });
+            console.log('\n💡 Use these files to copy content into Warp IDE Rules section');
+        }
     }
 }
 
